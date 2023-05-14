@@ -263,95 +263,146 @@ public class Urna {
     return null;
   }
 
-  private static void addCandidate(TSEEmployee tseProfessional) {
-    print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
-    print("Qual a categoria de seu candidato?\n");
-    print("(1) Presidente");
-    print("(2) Deputado Federal");
-    int candidateType = readInt();
-
-    if (candidateType > 2 || candidateType < 1) {
-      print("Comando inválido");
-      addCandidate(tseProfessional);
-    }
-
-    print("Qual o nome do candidato?");
-    String name = readString();
-
-    print("Qual o numero do candidato?");
-    int number = readInt();
-
-    print("Qual o partido do candidato?");
-    String party = readString();
-
-    Candidate candidate = null;
-    if (candidateType == 2) {
-      print("Qual o estado do candidato?");
-      String state = readString();
-
-      print("\nCadastrar o candidato deputado federal " + name + " Nº " + number + " do " + party + "(" + state + ")?");
-      candidate = new FederalDeputy.Builder()
-          .name(name)
-          .number(123)
-          .party(party)
-          .state(state)
-          .build();
-    } else if (candidateType == 1) {
-      print("\nCadastrar o candidato a presidente " + name + " Nº " + number + " do " + party + "?");
-      candidate = new President.Builder()
-          .name(name)
-          .number(123)
-          .party(party)
-          .build();
-    }
-
-    print("(1) Sim\n(2) Não");
-    int save = readInt();
-    if (save == 1 && candidate != null) {
-      print("Insira a senha da urna");
-      String pwd = readString();
-      tseProfessional.addCandidate(candidate, currentElection, pwd);
-      print("Candidato cadastrado com sucesso");
+  private static boolean validateNumberCandidate(int tipoCandidato, int numeroCandidato){
+    String validaNumero = Integer.toString(numeroCandidato);
+    if(tipoCandidato == 1){
+      if(validaNumero.length() == 2)
+        return true;
+      else
+        return false;
+    }else if(tipoCandidato == 2){
+      if(validaNumero.length() == 5)
+        return true;
+      else
+        return false;
+    }else{
+      print("Não foi encontrado o cargo a ser disputado.");
+      return false;
     }
   }
 
-  private static void removeCandidate(TSEEmployee tseProfessional) {
-    print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
-    print("Qual a categoria de seu candidato?");
-    print("(1) Presidente");
-    print("(2) Deputado Federal");
-    int candidateType = readInt();
-
-    if (candidateType > 2 || candidateType < 1) {
-      print("Comando inválido");
-      removeCandidate(tseProfessional);
+  private static void addPresident(TSEEmployee tseProfessional){
+    print("Qual o nome do candidato?");
+    String name = readString();
+    print("Qual o partido do candidato?");
+    String party = readString();
+    print("Qual o numero do candidato? (Digite um número de 2 digitos)");
+    boolean exit = true;
+    int number = 0;
+    while (exit) {
+      number = readInt();
+      if(validateNumberCandidate(1,number)){
+        exit = false;
+      }else{
+        print("O número do candidato precisa ter 2 dígitos");
+      }
     }
+    Candidate candidate = new President.Builder()
+        .name(name)
+        .number(number)
+        .party(party)
+        .build();
 
-    Candidate candidate = null;
+    print("\nCadastrar o candidato a presidente " + candidate.name + " Nº " + candidate.number + " do " + candidate.party + "?");
+    insertCandidateTSE(tseProfessional, candidate);
+  }
+
+  private static void addFederalDeputy(TSEEmployee tseProfessional){
+    print("Qual o nome do candidato?");
+    String name = readString();
+    print("Qual o partido do candidato?");
+    String party = readString();
+    print("Qual o estado do candidato?");
+    String state = readString();
+    print("Qual o numero do candidato? (Digite um número de 5 digitos)");
+    boolean exit = true;
+    int number = 0;
+    while (exit) {
+      number = readInt();
+      if(validateNumberCandidate(2,number)){
+              exit = false;
+      }else{
+        print("O número do candidato precisa ter 5 dígitos");
+      }
+    }
+    Candidate candidate = new FederalDeputy.Builder()
+    .name(name)
+    .number(number)
+    .party(party)
+    .state(state)
+    .build();
+
+    print("\nCadastrar o candidato deputado federal " + candidate.name + " Nº " + candidate.number + " do " + candidate.party + "(" + state + ")?");
+    insertCandidateTSE(tseProfessional, candidate);
+  }
+
+  private static void insertCandidateTSE(TSEEmployee tseProfessional, Candidate candidate){
+    print("(1) Sim\n(2) Não");
+    int save = readInt();
+    if (save == 1) {
+      print("Insira a senha da urna");
+      String pwd = readString();
+      tseProfessional.addCandidate(candidate, currentElection, pwd);
+    }else if(save == 2){
+      print("Candidato não foi cadastrado");
+    }
+  }
+
+  private static void addCandidate(TSEEmployee tseProfessional) {
+    boolean back = false;
+    while(!back){
+      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+      print("Qual o cargo do candidato?\n");
+      print("(1) Presidente");
+      print("(2) Deputado Federal");
+      print("(0) Voltar ao menu anterior");
+      int command = readInt();
+      switch (command) {
+        case 1 -> {
+          addPresident(tseProfessional);
+          back = true;
+        }
+        case 2 -> {
+          addFederalDeputy(tseProfessional);
+          back = true;
+        }
+        case 0 -> back = true;
+        default -> print("Comando inválido\n");
+      }
+    }
+  }
+
+  private static void verifyCandidateForRemove(TSEEmployee tseProfessional, String candidateType){
     print("Qual o numero do candidato?");
     int number = readInt();
-    if (candidateType == 2) {
-      print("Qual o estado do candidato?");
-      String state = readString();
-
-      candidate = currentElection.getFederalDeputyByNumber(state, number);
-      if (candidate == null) {
-        print("Candidato não encontrado");
-        return;
-      }
-      print("/Remover o candidato a deputado federal " + candidate.name + " Nº " + candidate.number + " do "
-          + candidate.party + "("
-          + ((FederalDeputy) candidate).state + ")?");
-    } else if (candidateType == 1) {
+    Candidate candidate = null;
+    if(candidateType == HashMapCandidate.hashMapCandidate.get("presidente")){
       candidate = currentElection.getPresidentByNumber(number);
       if (candidate == null) {
         print("Candidato não encontrado");
-        return;
+        removeCandidate(tseProfessional);
+      }else{
+        print("/Remover o candidato a presidente " + candidate.name + " Nº " + candidate.number + " do " + candidate.party
+        + "?");
+        removeCandidateTSE(tseProfessional, candidate);
       }
-      print("/Remover o candidato a presidente " + candidate.name + " Nº " + candidate.number + " do " + candidate.party
-          + "?");
+    }else if(candidateType == HashMapCandidate.hashMapCandidate.get("df")){
+      print("Qual o estado do candidato?");
+      String state = readString();
+      candidate = currentElection.getFederalDeputyByNumber(state, number);
+      if (candidate == null) {
+        print("Candidato não encontrado");
+        removeCandidate(tseProfessional);
+      }else{
+        print("/Remover o candidato a deputado federal " + candidate.name + " Nº " + candidate.number + " do "
+            + candidate.party + "("
+            + ((FederalDeputy) candidate).state + ")?");
+        removeCandidateTSE(tseProfessional, candidate);
+      }
     }
+  }
 
+  private static void removeCandidateTSE(TSEEmployee tseProfessional, Candidate candidate){
     print("(1) Sim\n(2) Não");
     int remove = readInt();
     if (remove == 1) {
@@ -359,6 +410,33 @@ public class Urna {
       String pwd = readString();
       tseProfessional.removeCandidate(candidate, currentElection, pwd);
       print("Candidato removido com sucesso");
+    }else{
+      print("O candidato não foi removido.");
+    }
+  }
+
+  private static void removeCandidate(TSEEmployee tseProfessional) {
+    boolean back = false;
+    while(!back){
+      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+      print("Qual o cargo do candidato?\n");
+      print("(1) Presidente");
+      print("(2) Deputado Federal");
+      print("(0) Voltar ao menu anterior");
+      int command = readInt();
+
+      switch (command) {
+        case 1 -> {
+          verifyCandidateForRemove(tseProfessional, HashMapCandidate.hashMapCandidate.get("presidente"));
+          back = true;
+        }
+        case 2 -> {
+          verifyCandidateForRemove(tseProfessional, HashMapCandidate.hashMapCandidate.get("df"));
+          back = true;
+        }
+        case 0 -> back = true;
+        default -> print("Comando inválido\n");
+      }
     }
   }
 
@@ -476,9 +554,9 @@ public class Urna {
         .password(electionPassword)
         .build();
 
-    President presidentCandidate1 = new President.Builder().name("João").number(123).party("PDS1").build();
+    President presidentCandidate1 = new President.Builder().name("João").number(12).party("PDS1").build();
     currentElection.addPresidentCandidate(presidentCandidate1, electionPassword);
-    President presidentCandidate2 = new President.Builder().name("Maria").number(124).party("ED").build();
+    President presidentCandidate2 = new President.Builder().name("Maria").number(14).party("ED").build();
     currentElection.addPresidentCandidate(presidentCandidate2, electionPassword);
     FederalDeputy federalDeputyCandidate1 = new FederalDeputy.Builder().name("Carlos").number(12345).party("PDS1")
         .state("MG").build();
