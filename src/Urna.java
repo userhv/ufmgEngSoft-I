@@ -495,9 +495,9 @@ public class Urna {
             print("(0) Sair");
             int command = readInt();
             switch (command) {
+              case 0 -> back = true;
               case 1 -> addCandidate((TSEEmployee) tseProfessional);
               case 2 -> removeCandidate((TSEEmployee) tseProfessional);
-              case 0 -> back = true;
               default -> print("Comando inválido\n");
             }
           }
