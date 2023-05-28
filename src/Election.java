@@ -226,7 +226,7 @@ public class Election {
 
     double generalVotes = ((double) totalVotesFD * 100);
 
-    builder.append("  Votos presidente:\n");
+    builder.append("  Votos para presidente\n");
     builder.append("  Total: " + totalVotesP + "\n");
     builder.append("  Votos nulos: " + nullPresidentVotes + " ("+ decimalFormater.format( generalVotes == 0 ? 0 : (double) nullPresidentVotes / (double) totalVotesFD * 100) + "%)\n");
     builder.append("  Votos brancos: " + presidentProtestVotes + " ("+ decimalFormater.format(generalVotes == 0 ? 0 : (double) presidentProtestVotes / (double) totalVotesFD * 100) + "%)\n");
@@ -248,12 +248,12 @@ public class Election {
       }
     builder.append("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
 
-    builder.append("\n\n  Votos deputado federal:\n");
+    builder.append("\n\n  Votos para deputado federal\n");
+    builder.append("  Total: " + totalVotesFD + "\n");
     builder.append("  Votos nulos: " + nullFederalDeputyVotes + " ("
         + decimalFormater.format(generalVotes == 0 ? 0 : (double) nullFederalDeputyVotes / (double) totalVotesFD * 100) + "%)\n");
     builder.append("  Votos brancos: " + federalDeputyProtestVotes + " ("
         + decimalFormater.format(generalVotes == 0 ? 0 : (double) federalDeputyProtestVotes / (double) totalVotesFD * 100) + "%)\n");
-    builder.append("  Total: " + totalVotesFD + "\n");
     builder.append("\tNumero - Partido - Nome - Estado - Votos - % dos votos totais\n");
     for (FederalDeputy candidate : sortedFederalDeputyRank) {
       builder.append(
