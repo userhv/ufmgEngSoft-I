@@ -483,17 +483,23 @@ public class Urna {
       print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
       boolean back = false;
       while (!back) {
-        print("Escolha uma opção:");
         if (tseProfessional instanceof TSEEmployee) {
-          print("(1) Cadastrar candidato");
-          print("(2) Remover candidato");
-          print("(0) Sair");
-          int command = readInt();
-          switch (command) {
-            case 1 -> addCandidate((TSEEmployee) tseProfessional);
-            case 2 -> removeCandidate((TSEEmployee) tseProfessional);
-            case 0 -> back = true;
-            default -> print("Comando inválido\n");
+          if(currentElection.getStatus()){
+            back = true;
+            print("Você não pode adicionar candidatos, pois a eleição já começou.");
+          }
+          else{
+            print("Escolha uma opção:");
+            print("(1) Cadastrar candidato");
+            print("(2) Remover candidato");
+            print("(0) Sair");
+            int command = readInt();
+            switch (command) {
+              case 1 -> addCandidate((TSEEmployee) tseProfessional);
+              case 2 -> removeCandidate((TSEEmployee) tseProfessional);
+              case 0 -> back = true;
+              default -> print("Comando inválido\n");
+            }
           }
         } else if (tseProfessional instanceof CertifiedProfessional) {
           print("(1) Iniciar sessão");
