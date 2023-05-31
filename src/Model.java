@@ -26,6 +26,18 @@ public class Model {
   private Map<Integer, President> presidentCandidates = new HashMap<Integer, President>();
 
   private Map<String, FederalDeputy> federalDeputyCandidates = new HashMap<String, FederalDeputy>();
+  
+  private Map<String, Senador> senadorCandidates = new HashMap<String, Senador>();
+
+  private Map<String, Governador> governadorCandidates = new HashMap<String, Governador>();
+
+  private Map<String, DeputadoEstadual> deputadoEstadualCandidates = new HashMap<String, DeputadoEstadual>();
+
+  private Map<String, Prefeito> prefeitoCandidates = new HashMap<String, Prefeito>();
+
+  private Map<String, Vereador> vereadorCandidates = new HashMap<String, Vereador>();
+
+  private Map<String, Partido> partidos = new HashMap<String, Partido>();
 
   private Map<Voter, FederalDeputy> tempFDVote = new HashMap<Voter, FederalDeputy>();
 
@@ -147,12 +159,49 @@ public class Model {
     return this.presidentCandidates.get(number);
   }
 
+  public Partido getPartidoBySigla(String sigla) {
+    return this.partidos.get(sigla);
+  }
+
+  public void addPartido(Partido partido, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    if (this.partidos.get(partido.sigla) != null)
+      throw new Warning("Sigla do partido indisponível.");
+
+    this.partidos.put(partido.sigla, partido);
+  }
+
+  public void removePartido(Partido partido, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+      for (Map.Entry<Integer, President> candidateEntry : presidentCandidates.entrySet()) {
+        President candidate = candidateEntry.getValue();
+        if(candidate.party == partido.sigla){
+          throw new Warning("Já existem candidatos cadastrados nesse partido");
+        }
+      }
+      for (Map.Entry<String, FederalDeputy> candidateEntry : federalDeputyCandidates.entrySet()) {
+        FederalDeputy candidate = candidateEntry.getValue();
+        if(candidate.party == partido.sigla){
+          throw new Warning("Já existem candidatos cadastrados nesse partido");
+        }
+      }
+
+    this.partidos.remove(partido.sigla);
+  }
+
   public void addPresidentCandidate(President candidate, String password) {
     if (!isValid(password))
       throw new Warning("Senha inválida");
 
     if (this.presidentCandidates.get(candidate.number) != null)
       throw new Warning("Numero de candidato indisponível");
+     
+    if (this.partidos.get(candidate.party) == null)
+      throw new Warning("O partido do candidato não existe.");
 
     this.presidentCandidates.put(candidate.number, candidate);
 
@@ -165,8 +214,42 @@ public class Model {
     this.presidentCandidates.remove(candidate.number);
   }
 
+  public void removePrefeitoCandidate(Prefeito candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    this.prefeitoCandidates.remove(candidate.state + candidate.number);
+  }
+
+  public void removeVereadorCandidate(Vereador candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    this.vereadorCandidates.remove(candidate.state + candidate.number);
+  }
+
   public FederalDeputy getFederalDeputyByNumber(String state, int number) {
     return this.federalDeputyCandidates.get(state + number);
+  }
+
+  public Senador getSenadorByNumber(String state, int number) {
+    return this.senadorCandidates.get(state + number);
+  }
+
+  public Governador getGovernadorByNumber(String state, int number) {
+    return this.governadorCandidates.get(state + number);
+  }
+
+  public DeputadoEstadual getDeputadoEstadualByNumber(String state, int number) {
+    return this.deputadoEstadualCandidates.get(state + number);
+  }
+
+  public Prefeito getPrefeitoByNumber(String state, int number) {
+    return this.prefeitoCandidates.get(state + number);
+  }
+
+  public Vereador getVereadorByNumber(String state, int number) {
+    return this.vereadorCandidates.get(state + number);
   }
 
   public void addFederalDeputyCandidate(FederalDeputy candidate, String password) {
@@ -175,8 +258,94 @@ public class Model {
 
     if (this.federalDeputyCandidates.get(candidate.state + candidate.number) != null)
       throw new Warning("Numero de candidato indisponível");
+    
+    if (this.partidos.get(candidate.party) == null)
+      throw new Warning("O partido do candidato não existe.");
 
     this.federalDeputyCandidates.put(candidate.state + candidate.number, candidate);
+  }
+
+  public void addSenadorCandidate(Senador candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    if (this.senadorCandidates.get(candidate.state + candidate.number) != null)
+      throw new Warning("Numero de candidato indisponível");
+    
+    if (this.partidos.get(candidate.party) == null)
+      throw new Warning("O partido do candidato não existe.");
+
+    this.senadorCandidates.put(candidate.state + candidate.number, candidate);
+  }
+
+  public void addPrefeitoCandidate(Prefeito candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    if (this.prefeitoCandidates.get(candidate.state + candidate.number) != null)
+      throw new Warning("Numero de candidato indisponível");
+    
+    if (this.partidos.get(candidate.party) == null)
+      throw new Warning("O partido do candidato não existe.");
+
+    this.prefeitoCandidates.put(candidate.state + candidate.number, candidate);
+  }
+
+  public void addVereadorCandidate(Vereador candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    if (this.vereadorCandidates.get(candidate.state + candidate.number) != null)
+      throw new Warning("Numero de candidato indisponível");
+    
+    if (this.partidos.get(candidate.party) == null)
+      throw new Warning("O partido do candidato não existe.");
+
+    this.vereadorCandidates.put(candidate.state + candidate.number, candidate);
+  }
+
+  public void addDeputadoEstadualCandidate(DeputadoEstadual candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    if (this.deputadoEstadualCandidates.get(candidate.state + candidate.number) != null)
+      throw new Warning("Numero de candidato indisponível");
+    
+    if (this.partidos.get(candidate.party) == null)
+      throw new Warning("O partido do candidato não existe.");
+
+    this.deputadoEstadualCandidates.put(candidate.state + candidate.number, candidate);
+  }
+
+  public void addGovernadorCandidate(Governador candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    if (this.governadorCandidates.get(candidate.state + candidate.number) != null)
+      throw new Warning("Numero de candidato indisponível");
+    
+    if (this.partidos.get(candidate.party) == null)
+      throw new Warning("O partido do candidato não existe.");
+
+    this.governadorCandidates.put(candidate.state + candidate.number, candidate);
+  }
+  public void removeSenadorCandidate(Senador candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    this.senadorCandidates.remove(candidate.state + candidate.number);
+  }
+  public void removeGovernadorCandidate(Governador candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    this.governadorCandidates.remove(candidate.state + candidate.number);
+  }
+  public void removeDeputadoEstadualCandidate(DeputadoEstadual candidate, String password) {
+    if (!isValid(password))
+      throw new Warning("Senha inválida");
+
+    this.deputadoEstadualCandidates.remove(candidate.state + candidate.number);
   }
 
   public void removeFederalDeputyCandidate(FederalDeputy candidate, String password) {

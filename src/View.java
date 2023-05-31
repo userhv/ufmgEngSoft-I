@@ -73,6 +73,10 @@ class View {
 		System.out.println("Nenhum candidato encontrado com este número, tente novamente");
 	}
 	
+	public void printPartidoNotFound() {
+		System.out.println("Nenhum partido encontrado com esta sigla, tente novamente");
+	}
+	
 	public void printInvalidPassword() {
 		System.out.println("Senha inválida, tente novamente");
 	}
@@ -97,10 +101,25 @@ class View {
 		System.out.println("O número do candidato precisa ter 5 dígitos");
 	}
 
+	public void printWrongSenadorNumber() {
+		System.out.println("O número do candidato precisa ter 2 dígitos");
+	}
+
+	public void printWrongDeputadoEstadualNumber() {
+		System.out.println("O número do candidato precisa ter 4 dígitos");
+	}
+
+	public void printWrongTituloEleitor() {
+		System.out.println("O titulo de eleitor precisa ter 12 dígitos");
+	}
+
 	public void printCandidateNotRecorded() {
 		System.out.println("Candidato não foi cadastrado");
 	}
 	
+	public void printPartidoNotRecorded() {
+		System.out.println("Partido não foi cadastrado");
+	}
 	
 	public void printCandidateRemoved() {
 		System.out.println("Candidato removido com sucesso");
@@ -109,11 +128,33 @@ class View {
 	public void printCandidateNotRemoved() {
 		System.out.println("O candidato não foi removido.");
 	}
+
+	public void printPartidoRemoved() {
+		System.out.println("Partido removido com sucesso");
+	}
+
+	public void printPartidoNotRemoved() {
+		System.out.println("O partido não foi removido.");
+	}
 	
-	public void printTSEMenu1() {
+	public void printTSEMenuInicial() {
+		System.out.println("Escolha uma opção:");
+		System.out.println("(1) Cadastros");
+		System.out.println("(2) Remoções");
+		System.out.println("(0) Sair");
+	}
+
+	public void printTSEMenuCadastro() {
 		System.out.println("Escolha uma opção:");
 		System.out.println("(1) Cadastrar candidato");
-		System.out.println("(2) Remover candidato");
+		System.out.println("(2) Cadastrar partido");
+		System.out.println("(3) Cadastrar eleitor");
+		System.out.println("(0) Sair");
+	}
+	public void printTSEMenuRemocao() {
+		System.out.println("Escolha uma opção:");
+		System.out.println("(1) Remover candidato");
+		System.out.println("(2) Remover partido");
 		System.out.println("(0) Sair");
 	}
 	
@@ -153,15 +194,21 @@ class View {
 		System.out.println("Sessão finalizada com sucesso");
 	}
 	
+
 	public void printRemovePresidentialCandidate(String name, int number, String party) {
-		System.out.println("/Remover o candidato a presidente " + name + " Nº " + number + " do " + party
+		System.out.println("Remover o candidato a presidente " + name + " Nº " + number + " do " + party
         + "?");
 	}
 
-	public void printRemoveFederalDeputyCandidate(String name, int number, String party, String state) {
-		System.out.println("/Remover o candidato a deputado federal " + name + " Nº " + number + " do "
-            + party + "(" + state + ")?");
+	public void printRemoveCandidate(String cargo,String name, int number, String party, String state) {
+		System.out.println("Remover o candidato a " + cargo  + name + " Nº " + number + " do "
+			+ party + "(" + state + ")?");
 	}
+
+	public void printRemovePartido(String name, String sigla) {
+		System.out.println("Remover o partido " + sigla + ": " + name + "?");
+	}
+
 	
 	public void printDataError() {
 		System.out.println("Erro na inicialização dos dados");
@@ -185,13 +232,31 @@ class View {
 		System.out.println("Insira sua senha");
 	}
 	
-	public void askCandidateType() {
+	public void askCandidateType_prod_1() {
 		System.out.println("");
 		System.out.println("Qual o cargo do candidato?\n");
 		System.out.println("(1) Presidente");
-		System.out.println("(2) Deputado Federal");
+		System.out.println("(2) Senador");
+		System.out.println("(3) Governador");
+		System.out.println("(4) Deputado Federal");
+		System.out.println("(5) Deputado Estadual");
 		System.out.println("(0) Voltar ao menu anterior");
+	}
 
+	public void askCandidateType_prod_2() {
+		System.out.println("");
+		System.out.println("Qual o cargo do candidato?\n");
+		System.out.println("(1) Prefeito");
+		System.out.println("(2) Vereador");
+		System.out.println("(0) Voltar ao menu anterior");
+	}
+	
+	public void askPartidoNome() {
+		System.out.println("Qual o nome do partido?");
+	}
+
+	public void askPartidoSigla() {
+		System.out.println("Qual a sigla do partido?");
 	}
 	
 	public void askCandidateNumber() {
@@ -218,20 +283,51 @@ class View {
 		System.out.println("Qual o estado do candidato?");
 	}
 
-	public void askDeputyCandidateNumber() {
-		System.out.println("Qual o numero do candidato? (Digite um número de 5 digitos)");
+	public void askTwoNumber() {
+		System.out.println("Qual o numero do candidato? (Digite um número de 2 digitos)");
+	}
+
+	public void askFourNumber() {
+		System.out.println("Qual o numero do candidato? (Digite um número de 4 digitos)");
 	}
 	
+	public void askFiveNumber() {
+		System.out.println("Qual o numero do candidato? (Digite um número de 5 digitos)");
+	}
+
 	public void askDeputyCandidateNumber(int counter) {
 		System.out.println("Digite o número do " + counter + "º candidato escolhido por você para deputado federal:\n");
 	}
-	
 	public void askPresidentInfo(String name, int number, String party) {
 		System.out.println("\nCadastrar o candidato a presidente " + name + " Nº " + number + " do " + party + "?");
 	}
 	
-	public void askFederalDeputyInfo(String name, int number, String party, String state) {
-		System.out.println("\nCadastrar o candidato deputado federal " + name + " Nº " + number + " do " + party + "(" + state + ")?");
+	public void askCandidateInfo(String cargo, String name, int number, String party, String state) {
+		System.out.println("\nCadastrar o candidato a " + cargo + ": " + name + " Nº " + number + " do " + party + "(" + state + ")?");
+	}
+
+	public void askPartidoInfo(String name, String sigla) {
+		System.out.println("\nCadastrar o partido " + sigla + ": " + name + "?");
+	}
+
+	public void askEleitorTitulo() {
+		System.out.println("Digite seu titulo de eleitor");
+	}
+
+	public void askEleitorNome() {
+		System.out.println("Digite seu nome");
+	}
+	
+	public void askEleitorEstado() {
+		System.out.println("Digite seu estado");
+	}
+
+	public void eleitorNaoCadastrado() {
+		System.out.println("Esse titulo de eleitor já foi cadastrado.");
+	}
+
+	public void eleitorCadastrado() {
+		System.out.println("Eleitor cadastrado.");
 	}
 	//--------------------------------
 }
