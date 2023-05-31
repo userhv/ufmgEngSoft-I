@@ -1,15 +1,15 @@
 // Gerencia o processo eleitoral
 public class CertifiedProfessional extends TSEProfessional {
-  public void startSession(Election election, String password) {
-    election.start(password);
+  public void startSession(Model Model, String password) {
+    Model.start(password);
   }
 
-  public void endSession(Election election, String password) {
-    election.finish(password);
+  public void endSession(Model Model, String password) {
+    Model.finish(password);
   }
 
-  public String getFinalResult(Election election, String password) {
-    return election.getResults(password);
+  public String getFinalResult(Model Model, String password) {
+    return Model.getResults(password);
   }
 
   public static class Builder {

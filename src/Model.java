@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.text.DecimalFormat;
 
-public class Election {
+public class Model {
   private final String password;
 
   private boolean status;
@@ -37,18 +37,18 @@ public class Election {
       return this;
     }
 
-    public Election build() {
+    public Model build() {
       if (password == null)
         throw new IllegalArgumentException("password mustn't be null");
 
       if (password.isEmpty())
         throw new IllegalArgumentException("password mustn't be empty");
 
-      return new Election(this.password);
+      return new Model(this.password);
     }
   }
 
-  protected Election(
+  protected Model(
       String password) {
     this.password = password;
     this.status = false;
