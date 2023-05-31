@@ -15,7 +15,7 @@ public class Controller {
 
   private static final Map<String, Voter> VoterMap = new HashMap<>();
   
-  //visão e modelo
+  //visão e modelo 
   private static View view;
   private static Model model;
   
