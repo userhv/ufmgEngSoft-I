@@ -1,17 +1,17 @@
 // Gerencia a preparação do ambiente (candidatos)
 public class TSEEmployee extends TSEProfessional {
-  public void addCandidate(Candidate candidate, Election election, String password) {
+  public void addCandidate(Candidate candidate, Model Model, String password) {
     if (candidate instanceof President)
-      election.addPresidentCandidate((President) candidate, password);
+      Model.addPresidentCandidate((President) candidate, password);
     else if (candidate instanceof FederalDeputy)
-      election.addFederalDeputyCandidate((FederalDeputy) candidate, password);
+      Model.addFederalDeputyCandidate((FederalDeputy) candidate, password);
   }
 
-  public void removeCandidate(Candidate candidate, Election election, String password) {
+  public void removeCandidate(Candidate candidate, Model Model, String password) {
     if (candidate instanceof President)
-      election.removePresidentCandidate((President) candidate, password);
+      Model.removePresidentCandidate((President) candidate, password);
     else if (candidate instanceof FederalDeputy)
-      election.removeFederalDeputyCandidate((FederalDeputy) candidate, password);
+      Model.removeFederalDeputyCandidate((FederalDeputy) candidate, password);
   }
 
   public static class Builder {

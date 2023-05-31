@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.io.File;
 import static java.lang.System.exit;
 
-public class Urna {
+public class Controller {
   private static final BufferedReader scanner = new BufferedReader(new InputStreamReader(System.in));
 
   private static boolean exit = false;
@@ -14,18 +14,21 @@ public class Urna {
   private static final Map<String, TSEProfessional> TSEMap = new HashMap<>();
 
   private static final Map<String, Voter> VoterMap = new HashMap<>();
-
-  private static Election currentElection;
-
-  private static void print(String output) {
-    System.out.println(output);
+  
+  //visão e modelo 
+  private static View view;
+  private static Model model;
+  
+  
+  public Controller(View view) {
+	  this.view = view;
   }
 
   private static String readString() {
     try {
       return scanner.readLine();
     } catch (Exception e) {
-      print("\nErro na leitura de entrada, digite novamente");
+      view.printReadError();
       return readString();
       // return "";
     }
@@ -35,7 +38,7 @@ public class Urna {
     try {
       return Integer.parseInt(readString());
     } catch (Exception e) {
-      print("\nErro na leitura de entrada, digite novamente");
+      view.printReadError();
       return readInt();
       // return -1;
     }
@@ -44,40 +47,38 @@ public class Urna {
   private static void startMenu() {
     try {
       while (!exit) {
-        print("Escolha uma opção:\n");
-        print("(1) Entrar (Eleitor)");
-        print("(2) Entrar (TSE)");
-        print("(0) Fechar aplicação");
+		  
+		view.printStartMenu();
         int command = readInt();
         switch (command) {
           case 1 -> voterMenu();
           case 2 -> tseMenu();
           case 0 -> exit = true;
-          default -> print("Comando inválido\n");
+          default -> view.printInvalidCommand();
         }
-        print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+        view.printSeparator();
       }
     } catch (Exception e) {
-      print("Erro inesperado\n");
+      view.printUnexpectedError();
     }
   }
 
   private static Voter getVoter() {
-    print("Insira seu título de eleitor:");
+    view.askVoterNumber();
     String electoralCard = readString();
     Voter voter = VoterMap.get(electoralCard);
     if (voter == null) {
-      print("Eleitor não encontrado, por favor confirme se a entrada está correta e tente novamente");
+      view.printVoterNotFound();
     } else {
-      print("Olá, você é " + voter.name + " de " + voter.state + "?\n");
-      print("(1) Sim\n(2) Não");
+      view.askVoterInfo(voter.name, voter.state);
+      view.printConfirmationPrompt();
       int command = readInt();
       if (command == 1)
         return voter;
       else if (command == 2)
-        print("Ok, você será redirecionado para o menu inicial");
+        view.printMenuRedirection();
       else {
-        print("Entrada inválida, tente novamente");
+        view.printInvalidInput();
         return getVoter();
       }
     }
@@ -85,18 +86,18 @@ public class Urna {
   }
 
   private static boolean votePresident(Voter voter) {
-    print("(ext) Desistir");
-    print("Digite o número do candidato escolhido por você para presidente:");
+    view.printExit();
+    view.askPresident();
     String vote = readString();
     if (vote.equals("ext"))
       throw new StopTrap("Saindo da votação");
     // Branco
     else if (vote.equals("br")) {
-      print("Você está votando branco\n");
-      print("(1) Confirmar\n(2) Mudar voto");
+      view.printBlankVote();
+      view.printVoteConfirmationPrompt();
       int confirm = readInt();
       if (confirm == 1) {
-        voter.vote(0, currentElection, "President", true);
+        voter.vote(0, model, "President", true);
         return true;
       } else
         votePresident(voter);
@@ -105,39 +106,39 @@ public class Urna {
         int voteNumber = Integer.parseInt(vote);
         // Nulo
         if (voteNumber == 0) {
-          print("Você está votando nulo\n");
-          print("(1) Confirmar\n(2) Mudar voto");
+          view.printNullVote();
+          view.printVoteConfirmationPrompt();
           int confirm = readInt();
           if (confirm == 1) {
-            voter.vote(0, currentElection, "President", false);
+            voter.vote(0, model, "President", false);
             return true;
           } else
             votePresident(voter);
         }
 
         // Normal
-        President candidate = currentElection.getPresidentByNumber(voteNumber);
+        President candidate = model.getPresidentByNumber(voteNumber);
         if (candidate == null) {
-          print("Nenhum candidato encontrado com este número, tente novamente");
-          print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+          view.printCandidateNotFound();
+          view.printSeparator();
           return votePresident(voter);
         }
-        print(candidate.name + " do " + candidate.party + "\n");
-        print("(1) Confirmar\n(2) Mudar voto");
+        view.print(candidate.name + " do " + candidate.party + "\n");
+        view.printVoteConfirmationPrompt();
         int confirm = readInt();
         if (confirm == 1) {
-          voter.vote(voteNumber, currentElection, "President", false);
+          voter.vote(voteNumber, model, "President", false);
           return true;
         } else if (confirm == 2)
           return votePresident(voter);
       } catch (Warning e) {
-        print(e.getMessage());
+        view.print(e.getMessage());
         return votePresident(voter);
       } catch (Error e) {
-        print(e.getMessage());
+        view.print(e.getMessage());
         throw e;
       } catch (Exception e) {
-        print("Ocorreu um erro inesperado");
+        view.printUnexpectedError();
         return false;
       }
     }
@@ -146,18 +147,18 @@ public class Urna {
   }
 
   private static boolean voteFederalDeputy(Voter voter, int counter) {
-    print("(ext) Desistir");
-    print("Digite o número do " + counter + "º candidato escolhido por você para deputado federal:\n");
+    view.printExit();
+    view.askDeputyCandidateNumber(counter);
     String vote = readString();
     if (vote.equals("ext"))
       throw new StopTrap("Saindo da votação");
     // Branco
     if (vote.equals("br")) {
-      print("Você está votando branco\n");
-      print("(1) Confirmar\n(2) Mudar voto");
+      view.printBlankVote();
+      view.printVoteConfirmationPrompt();
       int confirm = readInt();
       if (confirm == 1) {
-        voter.vote(0, currentElection, "FederalDeputy", true);
+        voter.vote(0, model, "FederalDeputy", true);
         return true;
       } else
         return voteFederalDeputy(voter, counter);
@@ -166,39 +167,39 @@ public class Urna {
         int voteNumber = Integer.parseInt(vote);
         // Nulo
         if (voteNumber == 0) {
-          print("Você está votando nulo\n");
-          print("(1) Confirmar\n(2) Mudar voto\n");
+          view.printNullVote();
+          view.printVoteConfirmationPrompt();
           int confirm = readInt();
           if (confirm == 1) {
-            voter.vote(0, currentElection, "FederalDeputy", false);
+            voter.vote(0, model, "FederalDeputy", false);
             return true;
           } else
             return voteFederalDeputy(voter, counter);
         }
 
         // Normal
-        FederalDeputy candidate = currentElection.getFederalDeputyByNumber(voter.state, voteNumber);
+        FederalDeputy candidate = model.getFederalDeputyByNumber(voter.state, voteNumber);
         if (candidate == null) {
-          print("Nenhum candidato encontrado com este número, tente novamente");
-          print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+          view.printCandidateNotFound();
+          view.printSeparator();
           return voteFederalDeputy(voter, counter);
         }
-        print(candidate.name + " do " + candidate.party + "(" + candidate.state + ")\n");
-        print("(1) Confirmar\n(2) Mudar voto");
+        view.print(candidate.name + " do " + candidate.party + "(" + candidate.state + ")\n");
+        view.printVoteConfirmationPrompt();
         int confirm = readInt();
         if (confirm == 1) {
-          voter.vote(voteNumber, currentElection, "FederalDeputy", false);
+          voter.vote(voteNumber, model, "FederalDeputy", false);
           return true;
         } else if (confirm == 2)
           return voteFederalDeputy(voter, counter);
       } catch (Warning e) {
-        print(e.getMessage());
+        view.print(e.getMessage());
         return voteFederalDeputy(voter, counter);
       } catch (Error e) {
-        print(e.getMessage());
+        view.print(e.getMessage());
         throw e;
       } catch (Exception e) {
-        print("Ocorreu um erro inesperado");
+        view.printUnexpectedError();
         return false;
       }
     }
@@ -208,57 +209,56 @@ public class Urna {
 
   private static void voterMenu() {
     try {
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
-      if (!currentElection.getStatus()) {
-        print("A eleição ainda não foi inicializada, verifique com um funcionário do TSE");
+      view.printSeparator();
+      if (!model.getStatus()) {
+        view.printModelNotStarted();
         return;
       }
 
       Voter voter = getVoter();
       if (voter == null)
         return;
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+      view.printSeparator();
 
-      print("Vamos começar!\n");
-      print(
-          "OBS:\n- A partir de agora caso você queira votar nulo você deve usar um numero composto de 0 (00 e 0000)\n- A partir de agora caso você queira votar branco você deve escrever br\n");
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+      view.printStartMessage();
+      view.print("OBS:\n- Caso você queira votar nulo, você deve usar um numero composto de 0 (00 e 0000)\n- caso você queira votar branco você deve escrever br\n");
+      view.printSeparator();
 
       if (votePresident(voter))
-        print("Voto para presidente registrado com sucesso");
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+        view.printSuccessfulVote();
+      view.printSeparator();
 
       if (voteFederalDeputy(voter, 1))
-        print("Primeiro voto para deputado federal registrado com sucesso");
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+        view.printSuccessfulVote();
+      view.printSeparator();
 
       if (voteFederalDeputy(voter, 2))
-        print("Segundo voto para deputado federal registrado com sucesso");
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+        view.printSuccessfulVote();
+      view.printSeparator();
 
     } catch (Warning e) {
-      print(e.getMessage());
+      view.print(e.getMessage());
     } catch (StopTrap e) {
-      print(e.getMessage());
+      view.print(e.getMessage());
     } catch (Exception e) {
-      print("Erro inesperado");
+      view.printUnexpectedError();
     }
   }
 
   private static TSEProfessional getTSEProfessional() {
-    print("Insira seu usuário:");
+    view.askUser();
     String user = readString();
     TSEProfessional tseProfessional = TSEMap.get(user);
     if (tseProfessional == null) {
-      print("Funcionário do TSE não encontrado, por favor confirme se a entrada está correta e tente novamente");
+      view.printTSEEmployeeNotFound();
     } else {
-      print("Insira sua senha:");
+      view.askPassword();
       String password = readString();
       // Deveria ser um hash na pratica
       if (tseProfessional.password.equals(password))
         return tseProfessional;
-      print("Senha inválida, tente novamente");
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+      view.printInvalidPassword();
+      view.printSeparator();
     }
     return null;
   }
@@ -276,17 +276,19 @@ public class Urna {
       else
         return false;
     }else{
-      print("Não foi encontrado o cargo a ser disputado.");
+      view.printOfficeNotFound();
       return false;
     }
   }
 
   private static void addPresident(TSEEmployee tseProfessional){
-    print("Qual o nome do candidato?");
+    view.askCandidateName();
     String name = readString();
-    print("Qual o partido do candidato?");
+    
+	view.askCandidateParty();
     String party = readString();
-    print("Qual o numero do candidato? (Digite um número de 2 digitos)");
+    
+	view.askCandidateNumber();
     boolean exit = true;
     int number = 0;
     while (exit) {
@@ -294,7 +296,7 @@ public class Urna {
       if(validateNumberCandidate(1,number)){
         exit = false;
       }else{
-        print("O número do candidato precisa ter 2 dígitos");
+        view.printWrongNumber();
       }
     }
     Candidate candidate = new President.Builder()
@@ -303,26 +305,29 @@ public class Urna {
         .party(party)
         .build();
 
-    print("\nCadastrar o candidato a presidente " + candidate.name + " Nº " + candidate.number + " do " + candidate.party + "?");
+    view.askPresidentInfo(candidate.name, candidate.number, candidate.party);
     insertCandidateTSE(tseProfessional, candidate);
   }
 
   private static void addFederalDeputy(TSEEmployee tseProfessional){
-    print("Qual o nome do candidato?");
+    view.askCandidateName();
     String name = readString();
-    print("Qual o partido do candidato?");
+    
+	view.askCandidateParty();
     String party = readString();
-    print("Qual o estado do candidato?");
+    
+	view.askCandidateState();
     String state = readString();
-    print("Qual o numero do candidato? (Digite um número de 5 digitos)");
-    boolean exit = true;
+    view.askDeputyCandidateNumber();
+    
+	boolean exit = true;
     int number = 0;
     while (exit) {
       number = readInt();
       if(validateNumberCandidate(2,number)){
               exit = false;
       }else{
-        print("O número do candidato precisa ter 5 dígitos");
+        view.printWrongDeputyNumber();
       }
     }
     Candidate candidate = new FederalDeputy.Builder()
@@ -332,30 +337,27 @@ public class Urna {
     .state(state)
     .build();
 
-    print("\nCadastrar o candidato deputado federal " + candidate.name + " Nº " + candidate.number + " do " + candidate.party + "(" + state + ")?");
+    view.askFederalDeputyInfo(name, number, party, state);
     insertCandidateTSE(tseProfessional, candidate);
   }
 
   private static void insertCandidateTSE(TSEEmployee tseProfessional, Candidate candidate){
-    print("(1) Sim\n(2) Não");
+    view.printConfirmationPrompt();
     int save = readInt();
     if (save == 1) {
-      print("Insira a senha da urna");
+      view.askBallotPassword();
       String pwd = readString();
-      tseProfessional.addCandidate(candidate, currentElection, pwd);
+      tseProfessional.addCandidate(candidate, model, pwd);
     }else if(save == 2){
-      print("Candidato não foi cadastrado");
+      view.printCandidateNotRecorded();
     }
   }
 
   private static void addCandidate(TSEEmployee tseProfessional) {
     boolean back = false;
     while(!back){
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
-      print("Qual o cargo do candidato?\n");
-      print("(1) Presidente");
-      print("(2) Deputado Federal");
-      print("(0) Voltar ao menu anterior");
+      view.printSeparator();
+	  view.askCandidateType();
       int command = readInt();
       switch (command) {
         case 1 -> {
@@ -367,62 +369,56 @@ public class Urna {
           back = true;
         }
         case 0 -> back = true;
-        default -> print("Comando inválido\n");
+        default -> view.printInvalidCommand();
       }
     }
   }
 
   private static void verifyCandidateForRemove(TSEEmployee tseProfessional, String candidateType){
-    print("Qual o numero do candidato?");
+    view.askCandidateNumber();
     int number = readInt();
     Candidate candidate = null;
     if(candidateType == HashMapCandidate.hashMapCandidate.get("presidente")){
-      candidate = currentElection.getPresidentByNumber(number);
+      candidate = model.getPresidentByNumber(number);
       if (candidate == null) {
-        print("Candidato não encontrado");
+        view.printCandidateNotFound();
         removeCandidate(tseProfessional);
       }else{
-        print("/Remover o candidato a presidente " + candidate.name + " Nº " + candidate.number + " do " + candidate.party
-        + "?");
+        view.printRemovePresidentialCandidate(candidate.name, candidate.number, candidate.party);
         removeCandidateTSE(tseProfessional, candidate);
       }
     }else if(candidateType == HashMapCandidate.hashMapCandidate.get("df")){
-      print("Qual o estado do candidato?");
+      view.askCandidateState();
       String state = readString();
-      candidate = currentElection.getFederalDeputyByNumber(state, number);
+      candidate = model.getFederalDeputyByNumber(state, number);
       if (candidate == null) {
-        print("Candidato não encontrado");
+        view.printCandidateNotFound();
         removeCandidate(tseProfessional);
       }else{
-        print("/Remover o candidato a deputado federal " + candidate.name + " Nº " + candidate.number + " do "
-            + candidate.party + "("
-            + ((FederalDeputy) candidate).state + ")?");
+		view.printRemoveFederalDeputyCandidate(candidate.name, candidate.number, candidate.party, ((FederalDeputy) candidate).state);
         removeCandidateTSE(tseProfessional, candidate);
       }
     }
   }
 
   private static void removeCandidateTSE(TSEEmployee tseProfessional, Candidate candidate){
-    print("(1) Sim\n(2) Não");
+    view.printConfirmationPrompt();
     int remove = readInt();
     if (remove == 1) {
-      print("Insira a senha da urna:");
+      view.askBallotPassword();
       String pwd = readString();
-      tseProfessional.removeCandidate(candidate, currentElection, pwd);
-      print("Candidato removido com sucesso");
+      tseProfessional.removeCandidate(candidate, model, pwd);
+      view.printCandidateRemoved();
     }else{
-      print("O candidato não foi removido.");
+      view.printCandidateNotRemoved();
     }
   }
 
   private static void removeCandidate(TSEEmployee tseProfessional) {
     boolean back = false;
     while(!back){
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
-      print("Qual o cargo do candidato?\n");
-      print("(1) Presidente");
-      print("(2) Deputado Federal");
-      print("(0) Voltar ao menu anterior");
+      view.printSeparator();
+	  view.askCandidateType();
       int command = readInt();
 
       switch (command) {
@@ -435,43 +431,43 @@ public class Urna {
           back = true;
         }
         case 0 -> back = true;
-        default -> print("Comando inválido\n");
+        default -> view.printInvalidCommand();
       }
     }
   }
 
   private static void startSession(CertifiedProfessional tseProfessional) {
     try {
-      print("Insira a senha da urna");
+      view.askBallotPassword();
       String pwd = readString();
-      tseProfessional.startSession(currentElection, pwd);
-      print("Sessão inicializada");
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+      tseProfessional.startSession(model, pwd);
+      view.printStartedSession();
+      view.printSeparator();
     } catch (Warning e) {
-      print(e.getMessage());
+      view.print(e.getMessage());
     }
   }
 
   private static void endSession(CertifiedProfessional tseProfessional) {
     try {
-      print("Insira a senha da urna:");
+      view.askBallotPassword();
       String pwd = readString();
-      tseProfessional.endSession(currentElection, pwd);
-      print("Sessão finalizada com sucesso");
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+      tseProfessional.endSession(model, pwd);
+      view.printTerminatedSession();
+      view.printSeparator();
     } catch (Warning e) {
-      print(e.getMessage());
+      view.print(e.getMessage());
     }
   }
 
   private static void showResults(CertifiedProfessional tseProfessional) {
     try {
-      print("Insira a senha da urna");
+      view.askBallotPassword();
       String pwd = readString();
-      print(tseProfessional.getFinalResult(currentElection, pwd));
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+      view.print(tseProfessional.getFinalResult(model, pwd));
+      view.printSeparator();
     } catch (Warning e) {
-      print(e.getMessage());
+      view.print(e.getMessage());
     }
   }
 
@@ -480,46 +476,40 @@ public class Urna {
       TSEProfessional tseProfessional = getTSEProfessional();
       if (tseProfessional == null)
         return;
-      print("\n=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n\n");
+      view.printSeparator();
       boolean back = false;
       while (!back) {
         if (tseProfessional instanceof TSEEmployee) {
-          if(currentElection.getStatus()){
+          if(model.getStatus()){
             back = true;
-            print("Você não pode adicionar candidatos, pois a eleição já começou.");
+            view.printCannotAddCandidate();
           }
           else{
-            print("Escolha uma opção:");
-            print("(1) Cadastrar candidato");
-            print("(2) Remover candidato");
-            print("(0) Sair");
+			view.printTSEMenu1();
             int command = readInt();
             switch (command) {
               case 0 -> back = true;
               case 1 -> addCandidate((TSEEmployee) tseProfessional);
               case 2 -> removeCandidate((TSEEmployee) tseProfessional);
-              default -> print("Comando inválido\n");
+              default -> view.printInvalidCommand();
             }
           }
         } else if (tseProfessional instanceof CertifiedProfessional) {
-          print("(1) Iniciar sessão");
-          print("(2) Finalizar sessão");
-          print("(3) Mostrar resultados");
-          print("(0) Sair");
+		  view.printTSEMenu2();
           int command = readInt();
           switch (command) {
             case 1 -> startSession((CertifiedProfessional) tseProfessional);
             case 2 -> endSession((CertifiedProfessional) tseProfessional);
             case 3 -> showResults((CertifiedProfessional) tseProfessional);
             case 0 -> back = true;
-            default -> print("Comando inválido\n");
+            default -> view.printInvalidCommand();
           }
         }
       }
     } catch (Warning e) {
-      print(e.getMessage());
+      view.print(e.getMessage());
     } catch (Exception e) {
-      print("Ocorreu um erro inesperado");
+      view.printUnexpectedError();
     }
   }
 
@@ -535,44 +525,44 @@ public class Urna {
       }
       myReader.close();
     } catch (Exception e) {
-      print("Erro na inicialização dos dados");
+      view.printDataError();
       exit(1);
     }
   }
 
   private static void loadTSEProfessionals() {
-    TSEMap.put("cert", new CertifiedProfessional.Builder()
-        .user("cert")
-        .password("54321")
+    TSEMap.put("fulano", new CertifiedProfessional.Builder()
+        .user("a")
+        .password("a")
         .build());
-    TSEMap.put("emp", new TSEEmployee.Builder()
-        .user("emp")
-        .password("12345")
+    TSEMap.put("a", new TSEEmployee.Builder()
+        .user("a")
+        .password("a")
         .build());
   }
 
-  public static void main(String[] args) {
+  public static void startSession() {
 
-    // Startup the current election instance
-    String electionPassword = "password";
+    // Startup the current Model instance
+    String ModelPassword = "password";
 
-    currentElection = new Election.Builder()
-        .password(electionPassword)
+    model = new Model.Builder()
+        .password(ModelPassword)
         .build();
 
     President presidentCandidate1 = new President.Builder().name("João").number(12).party("PDS1").build();
-    currentElection.addPresidentCandidate(presidentCandidate1, electionPassword);
+    model.addPresidentCandidate(presidentCandidate1, ModelPassword);
     President presidentCandidate2 = new President.Builder().name("Maria").number(14).party("ED").build();
-    currentElection.addPresidentCandidate(presidentCandidate2, electionPassword);
+    model.addPresidentCandidate(presidentCandidate2, ModelPassword);
     FederalDeputy federalDeputyCandidate1 = new FederalDeputy.Builder().name("Carlos").number(12345).party("PDS1")
         .state("MG").build();
-    currentElection.addFederalDeputyCandidate(federalDeputyCandidate1, electionPassword);
+    model.addFederalDeputyCandidate(federalDeputyCandidate1, ModelPassword);
     FederalDeputy federalDeputyCandidate2 = new FederalDeputy.Builder().name("Cleber").number(54321).party("PDS2")
         .state("MG").build();
-    currentElection.addFederalDeputyCandidate(federalDeputyCandidate2, electionPassword);
+    model.addFederalDeputyCandidate(federalDeputyCandidate2, ModelPassword);
     FederalDeputy federalDeputyCandidate3 = new FederalDeputy.Builder().name("Sofia").number(11211).party("IHC")
         .state("MG").build();
-    currentElection.addFederalDeputyCandidate(federalDeputyCandidate3, electionPassword);
+    model.addFederalDeputyCandidate(federalDeputyCandidate3, ModelPassword);
 
     // Startar todo os eleitores e profissionais do TSE
     loadVoters();
