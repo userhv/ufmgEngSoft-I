@@ -237,18 +237,54 @@ public class Model {
     if (!isValid(password))
       throw new Warning("Senha inválida");
 
-    for (Map.Entry<Integer, President> candidateEntry : presidentCandidates.entrySet()) {
-      President candidate = candidateEntry.getValue();
-      if (candidate.party == partido.sigla) {
-        throw new Warning("Já existem candidatos cadastrados nesse partido");
+      String mensagem = "Já existem candidatos cadastrados nesse partido";
+      if(Produtos.PRODUTO_1){
+        for (Map.Entry<Integer, President> candidateEntry : presidentCandidates.entrySet()) {
+          President candidate = candidateEntry.getValue();
+          if(candidate.party == partido.sigla){
+            throw new Warning(mensagem);
+          }
+        }
+        for (Map.Entry<String, FederalDeputy> candidateEntry : federalDeputyCandidates.entrySet()) {
+          FederalDeputy candidate = candidateEntry.getValue();
+          if(candidate.party == partido.sigla){
+            throw new Warning(mensagem);
+          }
+        }
+        for (Map.Entry<String, DeputadoEstadual> candidateEntry : deputadoEstadualCandidates.entrySet()) {
+          DeputadoEstadual candidate = candidateEntry.getValue();
+          if(candidate.party == partido.sigla){
+            throw new Warning(mensagem);
+          }
+        }
+        for (Map.Entry<String, Governador> candidateEntry : governadorCandidates.entrySet()) {
+          Governador candidate = candidateEntry.getValue();
+          if(candidate.party == partido.sigla){
+            throw new Warning(mensagem);
+          }
+        }
+        for (Map.Entry<String, Senador> candidateEntry : senadorCandidates.entrySet()) {
+          Senador candidate = candidateEntry.getValue();
+          if(candidate.party == partido.sigla){
+            throw new Warning(mensagem);
+          }
+        }
+      }else if(Produtos.PRODUTO_2){
+        for (Map.Entry<String, Prefeito> candidateEntry : prefeitoCandidates.entrySet()) {
+          Prefeito candidate = candidateEntry.getValue();
+          if(candidate.party == partido.sigla){
+            throw new Warning(mensagem);
+          }
+        }
+        for (Map.Entry<String, Vereador> candidateEntry : vereadorCandidates.entrySet()) {
+          Vereador candidate = candidateEntry.getValue();
+          if(candidate.party == partido.sigla){
+            throw new Warning(mensagem);
+          }
+        }
       }
     }
-    for (Map.Entry<String, FederalDeputy> candidateEntry : federalDeputyCandidates.entrySet()) {
-      FederalDeputy candidate = candidateEntry.getValue();
-      if (candidate.party == partido.sigla) {
-        throw new Warning("Já existem candidatos cadastrados nesse partido");
-      }
-    }
+
 
     this.partidos.remove(partido.sigla);
   }
