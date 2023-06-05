@@ -175,7 +175,7 @@ class View {
 	}
 	
 	public void printSuccessfulVote() {
-		System.out.println("Voto para presidente registrado com sucesso");
+		System.out.println("Voto registrado com sucesso");
 	}
 	
 	public void printOfficeNotFound() {
@@ -224,8 +224,40 @@ class View {
 		System.out.println("Olá, você é " + name + " de " + state + "?");
 	}
 	
-	public void askPresident() {
-		System.out.println("Digite o número do candidato escolhido por você para presidente");
+	public void askCandidato(String type) {
+
+		switch (type) {
+			case "President": 
+				System.out.println("Digite o número do candidato escolhido por você para presidente");
+				break;
+			case "Senador": 
+				System.out.println("Digite o número do candidato escolhido por você para senador");
+				break;
+			case "Governador": 
+				System.out.println("Digite o número do candidato escolhido por você para governador");
+				break;
+			case "FederalDeputy": 
+				System.out.println("Digite o número do candidato escolhido por você para deputador federal");
+				break;
+			case "DeputadoEstadual": 
+				System.out.println("Digite o número do candidato escolhido por você para deputado estadual");
+				break;
+			case "Prefeito": 
+				System.out.println("Digite o número do candidato escolhido por você para prefeito");
+				break;
+			case "Verea": 
+				System.out.println("Digite o número do candidato escolhido por você para vereador");
+				break;
+			default: 
+				System.out.println("Digite o número do candidato escolhido por você");
+				break;
+		}
+
+	}
+
+
+	public void askStateDeputyCandidateNumber(int counter) {
+		System.out.println("Digite o número do " + counter + "º candidato escolhido por você para deputado estadual:\n");
 	}
 	
 	public void askPassword() {
@@ -297,6 +329,14 @@ class View {
 
 	public void askDeputyCandidateNumber(int counter) {
 		System.out.println("Digite o número do " + counter + "º candidato escolhido por você para deputado federal:\n");
+	}
+
+	public void askDeputadoEstadualCandidateNumber(int counter) {
+		System.out.println("Digite o número do " + counter + "º candidato escolhido por você para deputado estadual:\n");
+	}
+
+	public void askVereadorCandidateNumber(int counter) {
+		System.out.println("Digite o número do " + counter + "º candidato escolhido por você para vereador:\n");
 	}
 	public void askPresidentInfo(String name, int number, String party) {
 		System.out.println("\nCadastrar o candidato a presidente " + name + " Nº " + number + " do " + party + "?");
