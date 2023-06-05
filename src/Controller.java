@@ -346,8 +346,19 @@ public class Controller {
       view.printSeparator();
 
       view.printStartMessage();
+
       view.print(
-          "OBS:\n- Caso você queira votar nulo, você deve usar um numero composto de 0 (00 e 0000)\n- caso você queira votar branco você deve escrever br\n");
+          "OBS:\n");
+
+      if (Produtos.BRANCO) {
+        view.print(
+            "Caso você queira votar branco você deve escrever br\n");
+      }
+
+      if (Produtos.NULO) {
+        view.print(
+            "Caso você queira votar nulo, você deve usar um numero composto de 0 (00 e 0000)\n");
+      }
       view.printSeparator();
 
       if (Produtos.PRODUTO_1) {
@@ -372,7 +383,6 @@ public class Controller {
         if (voteDeputadoEstadual(voter))
           view.printSuccessfulVote();
         view.printSeparator();
-
 
       } else if (Produtos.PRODUTO_2) {
 
