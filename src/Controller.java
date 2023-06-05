@@ -151,9 +151,9 @@ public class Controller {
     }
   }
 
-  private static boolean voteFederalDeputy(Voter voter, int counter) {
+  private static boolean voteFederalDeputy(Voter voter) {
     view.printExit();
-    view.askDeputyCandidateNumber(counter);
+    view.askDeputyCandidateNumber();
     String vote = readString();
     if (vote.equals("ext"))
       throw new StopTrap("Saindo da votação");
@@ -166,7 +166,7 @@ public class Controller {
         voter.vote(0, model, "FederalDeputy", true);
         return true;
       } else
-        return voteFederalDeputy(voter, counter);
+        return voteFederalDeputy(voter);
     } else {
       try {
         int voteNumber = Integer.parseInt(vote);
@@ -179,7 +179,7 @@ public class Controller {
             voter.vote(0, model, "FederalDeputy", false);
             return true;
           } else
-            return voteFederalDeputy(voter, counter);
+            return voteFederalDeputy(voter);
         }
 
         // Normal
@@ -187,7 +187,7 @@ public class Controller {
         if (candidate == null) {
           view.printCandidateNotFound();
           view.printSeparator();
-          return voteFederalDeputy(voter, counter);
+          return voteFederalDeputy(voter);
         }
         view.print(candidate.name + " do " + candidate.party + "(" + candidate.state + ")\n");
         view.printVoteConfirmationPrompt();
@@ -196,10 +196,10 @@ public class Controller {
           voter.vote(voteNumber, model, "FederalDeputy", false);
           return true;
         } else if (confirm == 2)
-          return voteFederalDeputy(voter, counter);
+          return voteFederalDeputy(voter);
       } catch (Warning e) {
         view.print(e.getMessage());
-        return voteFederalDeputy(voter, counter);
+        return voteFederalDeputy(voter);
       } catch (Error e) {
         view.print(e.getMessage());
         throw e;
@@ -211,9 +211,9 @@ public class Controller {
     return true;
   }
 
-  private static boolean voteDeputadoEstadual(Voter voter, int counter) {
+  private static boolean voteDeputadoEstadual(Voter voter) {
     view.printExit();
-    view.askDeputadoEstadualCandidateNumber(counter);
+    view.askDeputadoEstadualCandidateNumber();
     String vote = readString();
     if (vote.equals("ext"))
       throw new StopTrap("Saindo da votação");
@@ -226,7 +226,7 @@ public class Controller {
         voter.vote(0, model, "DeputadoEstadual", true);
         return true;
       } else
-        return voteDeputadoEstadual(voter, counter);
+        return voteDeputadoEstadual(voter);
     } else {
       try {
         int voteNumber = Integer.parseInt(vote);
@@ -239,7 +239,7 @@ public class Controller {
             voter.vote(0, model, "DeputadoEstadual", false);
             return true;
           } else
-            return voteDeputadoEstadual(voter, counter);
+            return voteDeputadoEstadual(voter);
         }
 
         // Normal
@@ -247,7 +247,7 @@ public class Controller {
         if (candidate == null) {
           view.printCandidateNotFound();
           view.printSeparator();
-          return voteDeputadoEstadual(voter, counter);
+          return voteDeputadoEstadual(voter);
         }
         view.print(candidate.name + " do " + candidate.party + "(" + candidate.state + ")\n");
         view.printVoteConfirmationPrompt();
@@ -256,10 +256,10 @@ public class Controller {
           voter.vote(voteNumber, model, "DeputadoEstadual", false);
           return true;
         } else if (confirm == 2)
-          return voteDeputadoEstadual(voter, counter);
+          return voteDeputadoEstadual(voter);
       } catch (Warning e) {
         view.print(e.getMessage());
-        return voteDeputadoEstadual(voter, counter);
+        return voteDeputadoEstadual(voter);
       } catch (Error e) {
         view.print(e.getMessage());
         throw e;
@@ -271,9 +271,9 @@ public class Controller {
     return true;
   }
 
-  private static boolean voteVereador(Voter voter, int counter) {
+  private static boolean voteVereador(Voter voter) {
     view.printExit();
-    view.askVereadorCandidateNumber(counter);
+    view.askVereadorCandidateNumber();
     String vote = readString();
     if (vote.equals("ext"))
       throw new StopTrap("Saindo da votação");
@@ -286,7 +286,7 @@ public class Controller {
         voter.vote(0, model, "Vereador", true);
         return true;
       } else
-        return voteVereador(voter, counter);
+        return voteVereador(voter);
     } else {
       try {
         int voteNumber = Integer.parseInt(vote);
@@ -299,7 +299,7 @@ public class Controller {
             voter.vote(0, model, "Vereador", false);
             return true;
           } else
-            return voteVereador(voter, counter);
+            return voteVereador(voter);
         }
 
         // Normal
@@ -307,7 +307,7 @@ public class Controller {
         if (candidate == null) {
           view.printCandidateNotFound();
           view.printSeparator();
-          return voteVereador(voter, counter);
+          return voteVereador(voter);
         }
         view.print(candidate.name + " do " + candidate.party + "(" + candidate.state + ")\n");
         view.printVoteConfirmationPrompt();
@@ -316,10 +316,10 @@ public class Controller {
           voter.vote(voteNumber, model, "Vereador", false);
           return true;
         } else if (confirm == 2)
-          return voteVereador(voter, counter);
+          return voteVereador(voter);
       } catch (Warning e) {
         view.print(e.getMessage());
-        return voteVereador(voter, counter);
+        return voteVereador(voter);
       } catch (Error e) {
         view.print(e.getMessage());
         throw e;
@@ -365,21 +365,14 @@ public class Controller {
           view.printSuccessfulVote();
         view.printSeparator();
 
-        if (voteFederalDeputy(voter, 1))
+        if (voteFederalDeputy(voter))
           view.printSuccessfulVote();
         view.printSeparator();
 
-        if (voteFederalDeputy(voter, 2))
+        if (voteDeputadoEstadual(voter))
           view.printSuccessfulVote();
         view.printSeparator();
 
-        if (voteDeputadoEstadual(voter, 1))
-          view.printSuccessfulVote();
-        view.printSeparator();
-
-        if (voteDeputadoEstadual(voter, 2))
-          view.printSuccessfulVote();
-        view.printSeparator();
 
       } else if (Produtos.PRODUTO_2) {
 
@@ -387,11 +380,7 @@ public class Controller {
           view.printSuccessfulVote();
           view.printSeparator();
         }
-        if (voteVereador(voter, 1)) {
-          view.printSuccessfulVote();
-          view.printSeparator();
-        }
-        if (voteVereador(voter, 2)) {
+        if (voteVereador(voter)) {
           view.printSuccessfulVote();
           view.printSeparator();
         }
@@ -1129,7 +1118,7 @@ public class Controller {
     President presidentCandidate2 = new President.Builder().name("Maria").number(14).party("ED").build();
     model.addPresidentCandidate(presidentCandidate2, ModelPassword);
 
-    Senador senador1 = new Senador.Builder().name("Joao").number(12).party("PDS1").state("MG").build();
+    Senador senador1 = new Senador.Builder().name("Hugo").number(12).party("PDS1").state("MG").build();
     model.addSenadorCandidate(senador1, ModelPassword);
     Senador senador2 = new Senador.Builder().name("Carolina").number(14).party("ED").state("MG").build();
     model.addSenadorCandidate(senador2, ModelPassword);
@@ -1161,12 +1150,12 @@ public class Controller {
   }
 
   private static void loadCandidates_prod_2(String ModelPassword) {
-    Prefeito prefeito1 = new Prefeito.Builder().name("João").number(12).party("PDS1").state("MG").build();
+    Prefeito prefeito1 = new Prefeito.Builder().name("Fuad").number(12).party("PDS1").state("MG").build();
     model.addPrefeitoCandidate(prefeito1, ModelPassword);
-    Prefeito prefeito2 = new Prefeito.Builder().name("Maria").number(14).party("ED").state("MG").build();
+    Prefeito prefeito2 = new Prefeito.Builder().name("Marina").number(14).party("ED").state("MG").build();
     model.addPrefeitoCandidate(prefeito2, ModelPassword);
 
-    Vereador vereador1 = new Vereador.Builder().name("Joao").number(1234).party("PDS1").state("MG").build();
+    Vereador vereador1 = new Vereador.Builder().name("Marciel").number(1234).party("PDS1").state("MG").build();
     model.addVereadorCandidate(vereador1, ModelPassword);
     Vereador vereador2 = new Vereador.Builder().name("Carolina").number(5432).party("ED").state("MG").build();
     model.addVereadorCandidate(vereador2, ModelPassword);

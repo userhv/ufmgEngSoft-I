@@ -283,11 +283,8 @@ public class Model {
           }
         }
       }
+      this.partidos.remove(partido.sigla);
     }
-
-
-    this.partidos.remove(partido.sigla);
-  }
 
   public void addPresidentCandidate(President candidate, String password) {
     if (!isValid(password))

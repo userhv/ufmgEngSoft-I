@@ -327,16 +327,16 @@ class View {
 		System.out.println("Qual o numero do candidato? (Digite um número de 5 digitos)");
 	}
 
-	public void askDeputyCandidateNumber(int counter) {
-		System.out.println("Digite o número do " + counter + "º candidato escolhido por você para deputado federal:\n");
+	public void askDeputyCandidateNumber() {
+		System.out.println("Digite o número do candidato escolhido por você para deputado federal:\n");
 	}
 
-	public void askDeputadoEstadualCandidateNumber(int counter) {
-		System.out.println("Digite o número do " + counter + "º candidato escolhido por você para deputado estadual:\n");
+	public void askDeputadoEstadualCandidateNumber() {
+		System.out.println("Digite o número do candidato escolhido por você para deputado estadual:\n");
 	}
 
-	public void askVereadorCandidateNumber(int counter) {
-		System.out.println("Digite o número do " + counter + "º candidato escolhido por você para vereador:\n");
+	public void askVereadorCandidateNumber() {
+		System.out.println("Digite o número do candidato escolhido por você para vereador:\n");
 	}
 	public void askPresidentInfo(String name, int number, String party) {
 		System.out.println("\nCadastrar o candidato a presidente " + name + " Nº " + number + " do " + party + "?");
