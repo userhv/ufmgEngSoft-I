@@ -1167,7 +1167,7 @@ public class Controller {
 
     Vereador vereador1 = new Vereador.Builder().name("Marciel").number(1234).party("PDS1").state("MG").build();
     model.addVereadorCandidate(vereador1, ModelPassword);
-    Vereador vereador2 = new Vereador.Builder().name("Carolina").number(5432).party("ED").state("MG").build();
+    Vereador vereador2 = new Vereador.Builder().name("Carolina").number(4321).party("ED").state("MG").build();
     model.addVereadorCandidate(vereador2, ModelPassword);
   }
 
