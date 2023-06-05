@@ -14,14 +14,13 @@ public class Controller {
   private static final Map<String, TSEProfessional> TSEMap = new HashMap<>();
 
   private static final Map<String, Voter> VoterMap = new HashMap<>();
-  
-  //visão e modelo 
+
+  // visão e modelo
   private static View view;
   private static Model model;
-  
-  
+
   public Controller(View view) {
-	  this.view = view;
+    this.view = view;
   }
 
   private static String readString() {
@@ -47,8 +46,8 @@ public class Controller {
   private static void startMenu() {
     try {
       while (!exit) {
-		  
-		view.printStartMenu();
+
+        view.printStartMenu();
         int command = readInt();
         switch (command) {
           case 1 -> voterMenu();
@@ -85,9 +84,10 @@ public class Controller {
     return null;
   }
 
-  private static boolean votePresident(Voter voter) {
+  private static boolean voteMajorityElection(Voter voter, String type) {
+
     view.printExit();
-    view.askPresident();
+    view.askCandidato(type);
     String vote = readString();
     if (vote.equals("ext"))
       throw new StopTrap("Saindo da votação");
@@ -97,10 +97,11 @@ public class Controller {
       view.printVoteConfirmationPrompt();
       int confirm = readInt();
       if (confirm == 1) {
-        voter.vote(0, model, "President", true);
+        voter.vote(0, model, type, true);
         return true;
-      } else
-        votePresident(voter);
+      } else {
+        return voteMajorityElection(voter, type);
+      }
     } else {
       try {
         int voteNumber = Integer.parseInt(vote);
@@ -110,30 +111,36 @@ public class Controller {
           view.printVoteConfirmationPrompt();
           int confirm = readInt();
           if (confirm == 1) {
-            voter.vote(0, model, "President", false);
+            voter.vote(0, model, type, false);
             return true;
-          } else
-            votePresident(voter);
+          } else {
+            return voteMajorityElection(voter, type);
+          }
         }
-
         // Normal
-        President candidate = model.getPresidentByNumber(voteNumber);
+        Candidate candidate = model.getCandidateByNumber(voter.state, voteNumber, type);
+
         if (candidate == null) {
           view.printCandidateNotFound();
           view.printSeparator();
-          return votePresident(voter);
+          return voteMajorityElection(voter, type);
         }
         view.print(candidate.name + " do " + candidate.party + "\n");
+
         view.printVoteConfirmationPrompt();
         int confirm = readInt();
         if (confirm == 1) {
-          voter.vote(voteNumber, model, "President", false);
+          voter.vote(voteNumber, model, type, false);
           return true;
-        } else if (confirm == 2)
-          return votePresident(voter);
+        } else if (confirm == 2) {
+          return voteMajorityElection(voter, type);
+        } else {
+          view.printInvalidCommand();
+          return voteMajorityElection(voter, type);
+        }
       } catch (Warning e) {
         view.print(e.getMessage());
-        return votePresident(voter);
+        return voteMajorityElection(voter, type);
       } catch (Error e) {
         view.print(e.getMessage());
         throw e;
@@ -142,8 +149,6 @@ public class Controller {
         return false;
       }
     }
-    return true;
-
   }
 
   private static boolean voteFederalDeputy(Voter voter, int counter) {
@@ -204,6 +209,126 @@ public class Controller {
       }
     }
     return true;
+  }
+
+  private static boolean voteDeputadoEstadual(Voter voter, int counter) {
+    view.printExit();
+    view.askDeputadoEstadualCandidateNumber(counter);
+    String vote = readString();
+    if (vote.equals("ext"))
+      throw new StopTrap("Saindo da votação");
+    // Branco
+    if (vote.equals("br")) {
+      view.printBlankVote();
+      view.printVoteConfirmationPrompt();
+      int confirm = readInt();
+      if (confirm == 1) {
+        voter.vote(0, model, "DeputadoEstadual", true);
+        return true;
+      } else
+        return voteDeputadoEstadual(voter, counter);
+    } else {
+      try {
+        int voteNumber = Integer.parseInt(vote);
+        // Nulo
+        if (voteNumber == 0) {
+          view.printNullVote();
+          view.printVoteConfirmationPrompt();
+          int confirm = readInt();
+          if (confirm == 1) {
+            voter.vote(0, model, "DeputadoEstadual", false);
+            return true;
+          } else
+            return voteDeputadoEstadual(voter, counter);
+        }
+
+        // Normal
+        DeputadoEstadual candidate = model.getDeputadoEstadualByNumber(voter.state, voteNumber);
+        if (candidate == null) {
+          view.printCandidateNotFound();
+          view.printSeparator();
+          return voteDeputadoEstadual(voter, counter);
+        }
+        view.print(candidate.name + " do " + candidate.party + "(" + candidate.state + ")\n");
+        view.printVoteConfirmationPrompt();
+        int confirm = readInt();
+        if (confirm == 1) {
+          voter.vote(voteNumber, model, "DeputadoEstadual", false);
+          return true;
+        } else if (confirm == 2)
+          return voteDeputadoEstadual(voter, counter);
+      } catch (Warning e) {
+        view.print(e.getMessage());
+        return voteDeputadoEstadual(voter, counter);
+      } catch (Error e) {
+        view.print(e.getMessage());
+        throw e;
+      } catch (Exception e) {
+        view.printUnexpectedError();
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean voteVereador(Voter voter, int counter) {
+    view.printExit();
+    view.askVereadorCandidateNumber(counter);
+    String vote = readString();
+    if (vote.equals("ext"))
+      throw new StopTrap("Saindo da votação");
+    // Branco
+    if (vote.equals("br")) {
+      view.printBlankVote();
+      view.printVoteConfirmationPrompt();
+      int confirm = readInt();
+      if (confirm == 1) {
+        voter.vote(0, model, "Vereador", true);
+        return true;
+      } else
+        return voteVereador(voter, counter);
+    } else {
+      try {
+        int voteNumber = Integer.parseInt(vote);
+        // Nulo
+        if (voteNumber == 0) {
+          view.printNullVote();
+          view.printVoteConfirmationPrompt();
+          int confirm = readInt();
+          if (confirm == 1) {
+            voter.vote(0, model, "Vereador", false);
+            return true;
+          } else
+            return voteVereador(voter, counter);
+        }
+
+        // Normal
+        Vereador candidate = model.getVereadorByNumber(voter.state, voteNumber);
+        if (candidate == null) {
+          view.printCandidateNotFound();
+          view.printSeparator();
+          return voteVereador(voter, counter);
+        }
+        view.print(candidate.name + " do " + candidate.party + "(" + candidate.state + ")\n");
+        view.printVoteConfirmationPrompt();
+        int confirm = readInt();
+        if (confirm == 1) {
+          voter.vote(voteNumber, model, "Vereador", false);
+          return true;
+        } else if (confirm == 2)
+          return voteVereador(voter, counter);
+      } catch (Warning e) {
+        view.print(e.getMessage());
+        return voteVereador(voter, counter);
+      } catch (Error e) {
+        view.print(e.getMessage());
+        throw e;
+      } catch (Exception e) {
+        view.printUnexpectedError();
+        return false;
+      }
+    }
+    return true;
 
   }
 
@@ -221,20 +346,56 @@ public class Controller {
       view.printSeparator();
 
       view.printStartMessage();
-      view.print("OBS:\n- Caso você queira votar nulo, você deve usar um numero composto de 0 (00 e 0000)\n- caso você queira votar branco você deve escrever br\n");
+      view.print(
+          "OBS:\n- Caso você queira votar nulo, você deve usar um numero composto de 0 (00 e 0000)\n- caso você queira votar branco você deve escrever br\n");
       view.printSeparator();
 
-      if (votePresident(voter))
-        view.printSuccessfulVote();
-      view.printSeparator();
+      if (Produtos.PRODUTO_1) {
+        // President | Governador | Senador | FederalDeputy | DeputadoEstadual
 
-      if (voteFederalDeputy(voter, 1))
-        view.printSuccessfulVote();
-      view.printSeparator();
+        if (voteMajorityElection(voter, "President"))
+          view.printSuccessfulVote();
+        view.printSeparator();
 
-      if (voteFederalDeputy(voter, 2))
-        view.printSuccessfulVote();
-      view.printSeparator();
+        if (voteMajorityElection(voter, "Senador"))
+          view.printSuccessfulVote();
+        view.printSeparator();
+
+        if (voteMajorityElection(voter, "Governador"))
+          view.printSuccessfulVote();
+        view.printSeparator();
+
+        if (voteFederalDeputy(voter, 1))
+          view.printSuccessfulVote();
+        view.printSeparator();
+
+        if (voteFederalDeputy(voter, 2))
+          view.printSuccessfulVote();
+        view.printSeparator();
+
+        if (voteDeputadoEstadual(voter, 1))
+          view.printSuccessfulVote();
+        view.printSeparator();
+
+        if (voteDeputadoEstadual(voter, 2))
+          view.printSuccessfulVote();
+        view.printSeparator();
+
+      } else if (Produtos.PRODUTO_2) {
+
+        if (voteMajorityElection(voter, "Prefeito")) {
+          view.printSuccessfulVote();
+          view.printSeparator();
+        }
+        if (voteVereador(voter, 1)) {
+          view.printSuccessfulVote();
+          view.printSeparator();
+        }
+        if (voteVereador(voter, 2)) {
+          view.printSuccessfulVote();
+          view.printSeparator();
+        }
+      }
 
     } catch (Warning e) {
       view.print(e.getMessage());
@@ -263,45 +424,44 @@ public class Controller {
     return null;
   }
 
-  private static boolean validateNumberCandidate(int tipoCandidato, int numeroCandidato){
+  private static boolean validateNumberCandidate(int tipoCandidato, int numeroCandidato) {
     String validaNumero = Integer.toString(numeroCandidato);
-    if(tipoCandidato == 1){
-      if(validaNumero.length() == 2)
+    if (tipoCandidato == 1) {
+      if (validaNumero.length() == 2)
         return true;
       else
         return false;
-    }else if(tipoCandidato == 2){
-      if(validaNumero.length() == 5)
+    } else if (tipoCandidato == 2) {
+      if (validaNumero.length() == 5)
         return true;
       else
         return false;
-    }else if(tipoCandidato == 3){
-      if(validaNumero.length() == 4)
+    } else if (tipoCandidato == 3) {
+      if (validaNumero.length() == 4)
         return true;
       else
         return false;
-    }else{
+    } else {
       view.printOfficeNotFound();
       return false;
     }
   }
-  
 
-  private static void addPresident(TSEEmployee tseProfessional){
+  private static void addPresident(TSEEmployee tseProfessional) {
     view.askCandidateName();
     String name = readString();
-    
-	view.askCandidateParty();
+
+    view.askCandidateParty();
     String party = readString();
-    
-	view.askCandidateNumber();
+
+    view.askCandidateNumber();
     boolean exit = true;
     int number = 0;
     while (exit) {
       number = readInt();
-      if(validateNumberCandidate(1,number)){
+      if (validateNumberCandidate(1, number)) {
         exit = false;
-      }else{
+      } else {
         view.printWrongNumber();
       }
     }
@@ -315,238 +475,236 @@ public class Controller {
     insertCandidateTSE(tseProfessional, candidate);
   }
 
-  private static void addSenador(TSEEmployee tseProfessional){
+  private static void addSenador(TSEEmployee tseProfessional) {
     view.askCandidateName();
     String name = readString();
-    
-	  view.askCandidateParty();
+
+    view.askCandidateParty();
     String party = readString();
-    
-	  view.askCandidateState();
+
+    view.askCandidateState();
     String state = readString();
-    
+
     view.askTwoNumber();
-    
-	  boolean exit = true;
+
+    boolean exit = true;
     int number = 0;
     while (exit) {
       number = readInt();
-      if(validateNumberCandidate(1,number)){
-              exit = false;
-      }else{
+      if (validateNumberCandidate(1, number)) {
+        exit = false;
+      } else {
         view.printWrongSenadorNumber();
       }
     }
     Candidate candidate = new Senador.Builder()
-    .name(name)
-    .number(number)
-    .party(party)
-    .state(state)
-    .build();
+        .name(name)
+        .number(number)
+        .party(party)
+        .state(state)
+        .build();
 
     view.askCandidateInfo("senador", name, number, party, state);
     insertCandidateTSE(tseProfessional, candidate);
   }
 
-  private static void addFederalDeputy(TSEEmployee tseProfessional){
+  private static void addFederalDeputy(TSEEmployee tseProfessional) {
     view.askCandidateName();
     String name = readString();
-    
-	view.askCandidateParty();
+
+    view.askCandidateParty();
     String party = readString();
-    
-	view.askCandidateState();
+
+    view.askCandidateState();
     String state = readString();
     view.askFiveNumber();
-    
-	boolean exit = true;
+
+    boolean exit = true;
     int number = 0;
     while (exit) {
       number = readInt();
-      if(validateNumberCandidate(2,number)){
-              exit = false;
-      }else{
+      if (validateNumberCandidate(2, number)) {
+        exit = false;
+      } else {
         view.printWrongDeputyNumber();
       }
     }
     Candidate candidate = new FederalDeputy.Builder()
-    .name(name)
-    .number(number)
-    .party(party)
-    .state(state)
-    .build();
+        .name(name)
+        .number(number)
+        .party(party)
+        .state(state)
+        .build();
 
     view.askCandidateInfo("deputado federal", name, number, party, state);
     insertCandidateTSE(tseProfessional, candidate);
   }
 
-  private static void addGovernador(TSEEmployee tseProfessional){
+  private static void addGovernador(TSEEmployee tseProfessional) {
     view.askCandidateName();
     String name = readString();
-    
-	view.askCandidateParty();
+
+    view.askCandidateParty();
     String party = readString();
-    
-	view.askCandidateState();
+
+    view.askCandidateState();
     String state = readString();
     view.askTwoNumber();
-    
-	boolean exit = true;
+
+    boolean exit = true;
     int number = 0;
     while (exit) {
       number = readInt();
-      if(validateNumberCandidate(1,number)){
-              exit = false;
-      }else{
+      if (validateNumberCandidate(1, number)) {
+        exit = false;
+      } else {
         view.printWrongDeputyNumber();
       }
     }
     Candidate candidate = new Governador.Builder()
-    .name(name)
-    .number(number)
-    .party(party)
-    .state(state)
-    .build();
+        .name(name)
+        .number(number)
+        .party(party)
+        .state(state)
+        .build();
 
-    view.askCandidateInfo("governador",name, number, party, state);
+    view.askCandidateInfo("governador", name, number, party, state);
     insertCandidateTSE(tseProfessional, candidate);
   }
 
-  private static void addDeputadoEstadual(TSEEmployee tseProfessional){
+  private static void addDeputadoEstadual(TSEEmployee tseProfessional) {
     view.askCandidateName();
     String name = readString();
-    
-	view.askCandidateParty();
+
+    view.askCandidateParty();
     String party = readString();
-    
-	view.askCandidateState();
+
+    view.askCandidateState();
     String state = readString();
     view.askFourNumber();
-    
-	boolean exit = true;
+
+    boolean exit = true;
     int number = 0;
     while (exit) {
       number = readInt();
-      if(validateNumberCandidate(3,number)){
-              exit = false;
-      }else{
+      if (validateNumberCandidate(3, number)) {
+        exit = false;
+      } else {
         view.printWrongDeputadoEstadualNumber();
       }
     }
     Candidate candidate = new DeputadoEstadual.Builder()
-    .name(name)
-    .number(number)
-    .party(party)
-    .state(state)
-    .build();
+        .name(name)
+        .number(number)
+        .party(party)
+        .state(state)
+        .build();
 
-    view.askCandidateInfo("deputado estadual",name, number, party, state);
+    view.askCandidateInfo("deputado estadual", name, number, party, state);
     insertCandidateTSE(tseProfessional, candidate);
   }
 
-
-  private static void addPrefeito(TSEEmployee tseProfessional){
+  private static void addPrefeito(TSEEmployee tseProfessional) {
     view.askCandidateName();
     String name = readString();
-    
-	  view.askCandidateParty();
+
+    view.askCandidateParty();
     String party = readString();
-    
-	  view.askCandidateState();
+
+    view.askCandidateState();
     String state = readString();
-    
+
     view.askTwoNumber();
-    
-	  boolean exit = true;
+
+    boolean exit = true;
     int number = 0;
     while (exit) {
       number = readInt();
-      if(validateNumberCandidate(1,number)){
-              exit = false;
-      }else{
+      if (validateNumberCandidate(1, number)) {
+        exit = false;
+      } else {
         view.printWrongSenadorNumber();
       }
     }
     Candidate candidate = new Prefeito.Builder()
-    .name(name)
-    .number(number)
-    .party(party)
-    .state(state)
-    .build();
+        .name(name)
+        .number(number)
+        .party(party)
+        .state(state)
+        .build();
 
-    view.askCandidateInfo("prefeito",name, number, party, state);
+    view.askCandidateInfo("prefeito", name, number, party, state);
     insertCandidateTSE(tseProfessional, candidate);
   }
 
-  private static void addVereador(TSEEmployee tseProfessional){
+  private static void addVereador(TSEEmployee tseProfessional) {
     view.askCandidateName();
     String name = readString();
-    
-	  view.askCandidateParty();
+
+    view.askCandidateParty();
     String party = readString();
-    
-	  view.askCandidateState();
+
+    view.askCandidateState();
     String state = readString();
-    
+
     view.askFourNumber();
-    
-	  boolean exit = true;
+
+    boolean exit = true;
     int number = 0;
     while (exit) {
       number = readInt();
-      if(validateNumberCandidate(3,number)){
-              exit = false;
-      }else{
+      if (validateNumberCandidate(3, number)) {
+        exit = false;
+      } else {
         view.printWrongDeputadoEstadualNumber();
       }
     }
     Candidate candidate = new Vereador.Builder()
-    .name(name)
-    .number(number)
-    .party(party)
-    .state(state)
-    .build();
+        .name(name)
+        .number(number)
+        .party(party)
+        .state(state)
+        .build();
 
-    view.askCandidateInfo("vereador",name, number, party, state);
+    view.askCandidateInfo("vereador", name, number, party, state);
     insertCandidateTSE(tseProfessional, candidate);
   }
 
-
-  private static void insertCandidateTSE(TSEEmployee tseProfessional, Candidate candidate){
+  private static void insertCandidateTSE(TSEEmployee tseProfessional, Candidate candidate) {
     view.printConfirmationPrompt();
     int save = readInt();
     if (save == 1) {
       view.askBallotPassword();
       String pwd = readString();
-      if(Produtos.PRODUTO_1){
+      if (Produtos.PRODUTO_1) {
         tseProfessional.addCandidate(candidate, model, pwd);
-      }else if(Produtos.PRODUTO_2){
+      } else if (Produtos.PRODUTO_2) {
         tseProfessional.addCandidate_prod_2(candidate, model, pwd);
       }
-    }else if(save == 2){
+    } else if (save == 2) {
       view.printCandidateNotRecorded();
     }
   }
 
-  private static void insertPartidoTSE(TSEEmployee tseProfessional, Partido partido){
+  private static void insertPartidoTSE(TSEEmployee tseProfessional, Partido partido) {
     view.printConfirmationPrompt();
     int save = readInt();
     if (save == 1) {
       view.askBallotPassword();
       String pwd = readString();
       tseProfessional.addPartido(partido, model, pwd);
-    }else if(save == 2){
+    } else if (save == 2) {
       view.printPartidoNotRecorded();
     }
   }
 
-  private static void addPartido(TSEEmployee tseProfessional){
+  private static void addPartido(TSEEmployee tseProfessional) {
     view.askPartidoNome();
     String nome = readString();
-    
-	  view.askPartidoSigla();
+
+    view.askPartidoSigla();
     String sigla = readString();
-    
+
     Partido partido = new Partido.Builder()
         .nome(nome)
         .sigla(sigla)
@@ -556,7 +714,7 @@ public class Controller {
     insertPartidoTSE(tseProfessional, partido);
   }
 
-  private static void removePartidoTSE(TSEEmployee tseProfessional, Partido partido){
+  private static void removePartidoTSE(TSEEmployee tseProfessional, Partido partido) {
     view.printConfirmationPrompt();
     int remove = readInt();
     if (remove == 1) {
@@ -564,20 +722,20 @@ public class Controller {
       String pwd = readString();
       tseProfessional.removePartido(partido, model, pwd);
       view.printPartidoRemoved();
-    }else{
+    } else {
       view.printPartidoNotRemoved();
     }
   }
 
   private static void removePartido(TSEEmployee tseProfessional) {
-	  view.askPartidoSigla();
+    view.askPartidoSigla();
     String sigla = readString();
     Partido partido = null;
     partido = model.getPartidoBySigla(sigla);
     if (partido == null) {
       view.printPartidoNotFound();
       removePartido(tseProfessional);
-    }else{
+    } else {
       view.printRemovePartido(partido.nome, partido.sigla);
       removePartidoTSE(tseProfessional, partido);
     }
@@ -585,9 +743,9 @@ public class Controller {
 
   private static void addCandidate_prod_1(TSEEmployee tseProfessional) {
     boolean back = false;
-    while(!back){
+    while (!back) {
       view.printSeparator();
-	  view.askCandidateType_prod_1();
+      view.askCandidateType_prod_1();
       int command = readInt();
       switch (command) {
         case 1 -> {
@@ -606,7 +764,7 @@ public class Controller {
           addFederalDeputy(tseProfessional);
           back = true;
         }
-        case 5-> {
+        case 5 -> {
           addDeputadoEstadual(tseProfessional);
           back = true;
         }
@@ -616,12 +774,11 @@ public class Controller {
     }
   }
 
-
   private static void addCandidate_prod_2(TSEEmployee tseProfessional) {
     boolean back = false;
-    while(!back){
+    while (!back) {
       view.printSeparator();
-	  view.askCandidateType_prod_2();
+      view.askCandidateType_prod_2();
       int command = readInt();
       switch (command) {
         case 1 -> {
@@ -638,119 +795,123 @@ public class Controller {
     }
   }
 
-  private static void verifyCandidateForRemove_prod_1(TSEEmployee tseProfessional, String candidateType){
+  private static void verifyCandidateForRemove_prod_1(TSEEmployee tseProfessional, String candidateType) {
     view.askCandidateNumber();
     int number = readInt();
     Candidate candidate = null;
-    if(candidateType == HashMapCandidate.hashMapCandidate.get("presidente")){
+    if (candidateType == HashMapCandidate.hashMapCandidate.get("presidente")) {
       candidate = model.getPresidentByNumber(number);
       if (candidate == null) {
         view.printCandidateNotFound();
         removeCandidate_prod_1(tseProfessional);
-      }else{
+      } else {
         view.printRemovePresidentialCandidate(candidate.name, candidate.number, candidate.party);
         removeCandidateTSE(tseProfessional, candidate);
       }
-    }else if(candidateType == HashMapCandidate.hashMapCandidate.get("senador")){
+    } else if (candidateType == HashMapCandidate.hashMapCandidate.get("senador")) {
       view.askCandidateState();
       String state = readString();
       candidate = model.getSenadorByNumber(state, number);
       if (candidate == null) {
         view.printCandidateNotFound();
         removeCandidate_prod_1(tseProfessional);
-      }else{
-		view.printRemoveCandidate("senador", candidate.name, candidate.number, candidate.party, ((Senador) candidate).state);
+      } else {
+        view.printRemoveCandidate("senador", candidate.name, candidate.number, candidate.party,
+            ((Senador) candidate).state);
         removeCandidateTSE(tseProfessional, candidate);
       }
-    }
-    else if(candidateType == HashMapCandidate.hashMapCandidate.get("governador")){
+    } else if (candidateType == HashMapCandidate.hashMapCandidate.get("governador")) {
       view.askCandidateState();
       String state = readString();
       candidate = model.getGovernadorByNumber(state, number);
       if (candidate == null) {
         view.printCandidateNotFound();
         removeCandidate_prod_1(tseProfessional);
-      }else{
-		view.printRemoveCandidate(candidateType,candidate.name, candidate.number, candidate.party, ((Governador) candidate).state);
+      } else {
+        view.printRemoveCandidate(candidateType, candidate.name, candidate.number, candidate.party,
+            ((Governador) candidate).state);
         removeCandidateTSE(tseProfessional, candidate);
       }
-    }
-    else if(candidateType == HashMapCandidate.hashMapCandidate.get("df")){
+    } else if (candidateType == HashMapCandidate.hashMapCandidate.get("df")) {
       view.askCandidateState();
       String state = readString();
       candidate = model.getFederalDeputyByNumber(state, number);
       if (candidate == null) {
         view.printCandidateNotFound();
         removeCandidate_prod_1(tseProfessional);
-      }else{
-		view.printRemoveCandidate(candidateType,candidate.name, candidate.number, candidate.party, ((FederalDeputy) candidate).state);
+      } else {
+        view.printRemoveCandidate(candidateType, candidate.name, candidate.number, candidate.party,
+            ((FederalDeputy) candidate).state);
         removeCandidateTSE(tseProfessional, candidate);
       }
-    }else if(candidateType == HashMapCandidate.hashMapCandidate.get("de")){
+    } else if (candidateType == HashMapCandidate.hashMapCandidate.get("de")) {
       view.askCandidateState();
       String state = readString();
       candidate = model.getDeputadoEstadualByNumber(state, number);
       if (candidate == null) {
         view.printCandidateNotFound();
         removeCandidate_prod_1(tseProfessional);
-      }else{
-		  view.printRemoveCandidate(candidateType,candidate.name, candidate.number, candidate.party, ((DeputadoEstadual) candidate).state);
+      } else {
+        view.printRemoveCandidate(candidateType, candidate.name, candidate.number, candidate.party,
+            ((DeputadoEstadual) candidate).state);
         removeCandidateTSE(tseProfessional, candidate);
       }
     }
   }
 
-  private static void verifyCandidateForRemove_prod_2(TSEEmployee tseProfessional, String candidateType){
+  private static void verifyCandidateForRemove_prod_2(TSEEmployee tseProfessional, String candidateType) {
     view.askCandidateNumber();
     int number = readInt();
     Candidate candidate = null;
-    if(candidateType == HashMapCandidate.hashMapCandidate.get("prefeito")){
+    if (candidateType == HashMapCandidate.hashMapCandidate.get("prefeito")) {
       view.askCandidateState();
       String state = readString();
       candidate = model.getPrefeitoByNumber(state, number);
       if (candidate == null) {
         view.printCandidateNotFound();
         removeCandidate_prod_1(tseProfessional);
-      }else{
-		  view.printRemoveCandidate(candidateType,candidate.name, candidate.number, candidate.party, ((Prefeito) candidate).state);
+      } else {
+        view.printRemoveCandidate(candidateType, candidate.name, candidate.number, candidate.party,
+            ((Prefeito) candidate).state);
         removeCandidateTSE(tseProfessional, candidate);
       }
-    } else if(candidateType == HashMapCandidate.hashMapCandidate.get("vereador")){
+    } else if (candidateType == HashMapCandidate.hashMapCandidate.get("vereador")) {
       view.askCandidateState();
       String state = readString();
       candidate = model.getVereadorByNumber(state, number);
       if (candidate == null) {
         view.printCandidateNotFound();
         removeCandidate_prod_1(tseProfessional);
-      }else{
-		view.printRemoveCandidate(candidateType, candidate.name, candidate.number, candidate.party, ((Vereador) candidate).state);
+      } else {
+        view.printRemoveCandidate(candidateType, candidate.name, candidate.number, candidate.party,
+            ((Vereador) candidate).state);
         removeCandidateTSE(tseProfessional, candidate);
       }
     }
   }
 
-  private static void removeCandidateTSE(TSEEmployee tseProfessional, Candidate candidate){
+  private static void removeCandidateTSE(TSEEmployee tseProfessional, Candidate candidate) {
     view.printConfirmationPrompt();
     int remove = readInt();
     if (remove == 1) {
       view.askBallotPassword();
       String pwd = readString();
-      if(Produtos.PRODUTO_1){
+      if (Produtos.PRODUTO_1) {
         tseProfessional.removeCandidate_prod_1(candidate, model, pwd);
-      }else if(Produtos.PRODUTO_2){
+      } else if (Produtos.PRODUTO_2) {
         tseProfessional.removeCandidate_prod_2(candidate, model, pwd);
       }
       view.printCandidateRemoved();
-    }else{
+    } else {
       view.printCandidateNotRemoved();
     }
   }
 
   private static void removeCandidate_prod_1(TSEEmployee tseProfessional) {
     boolean back = false;
-    while(!back){
+    while (!back) {
       view.printSeparator();
-	  view.askCandidateType_prod_1();
+      view.askCandidateType_prod_1();
       int command = readInt();
 
       switch (command) {
@@ -782,9 +943,9 @@ public class Controller {
 
   private static void removeCandidate_prod_2(TSEEmployee tseProfessional) {
     boolean back = false;
-    while(!back){
+    while (!back) {
       view.printSeparator();
-	  view.askCandidateType_prod_2();
+      view.askCandidateType_prod_2();
       int command = readInt();
 
       switch (command) {
@@ -801,7 +962,7 @@ public class Controller {
       }
     }
   }
-  //#endif
+  // #endif
 
   private static void startSession(CertifiedProfessional tseProfessional) {
     try {
@@ -838,15 +999,15 @@ public class Controller {
     }
   }
 
-  private static void addEleitor(TSEEmployee tseProfessional){
+  private static void addEleitor(TSEEmployee tseProfessional) {
     view.askEleitorTitulo();
     String titulo = "";
     boolean exit = true;
     while (exit) {
       titulo = readString();
-      if(titulo.length() == 12){
-              exit = false;
-      }else{
+      if (titulo.length() == 12) {
+        exit = false;
+      } else {
         view.printWrongTituloEleitor();
       }
     }
@@ -854,7 +1015,7 @@ public class Controller {
     String nome = readString();
     view.askEleitorEstado();
     String estado = readString();
-    if(VoterMap.get(titulo) != null){
+    if (VoterMap.get(titulo) != null) {
       view.eleitorNaoCadastrado();
       tseMenuCadastro((TSEEmployee) tseProfessional);
     }
@@ -865,18 +1026,18 @@ public class Controller {
 
   private static void tseMenuCadastro(TSEEmployee tseProfessional) {
     boolean back = false;
-    while(!back){
+    while (!back) {
       view.printTSEMenuCadastro();
       int command = readInt();
-      switch(command){
+      switch (command) {
         case 0 -> back = true;
-        case 1 ->  {
-          if(Produtos.PRODUTO_1){
+        case 1 -> {
+          if (Produtos.PRODUTO_1) {
             addCandidate_prod_1((TSEEmployee) tseProfessional);
-          }else if(Produtos.PRODUTO_2){
+          } else if (Produtos.PRODUTO_2) {
             addCandidate_prod_2((TSEEmployee) tseProfessional);
-            }
           }
+        }
         case 2 -> addPartido((TSEEmployee) tseProfessional);
         case 3 -> addEleitor((TSEEmployee) tseProfessional);
         default -> view.printInvalidCommand();
@@ -886,18 +1047,18 @@ public class Controller {
 
   private static void tseMenuRemocao(TSEEmployee tseProfessional) {
     boolean back = false;
-    while(!back){
+    while (!back) {
       view.printTSEMenuRemocao();
       int command = readInt();
-      switch(command){
+      switch (command) {
         case 0 -> back = true;
         case 1 -> {
-          if(Produtos.PRODUTO_1){
+          if (Produtos.PRODUTO_1) {
             removeCandidate_prod_1((TSEEmployee) tseProfessional);
-          }else if(Produtos.PRODUTO_2){
+          } else if (Produtos.PRODUTO_2) {
             removeCandidate_prod_2((TSEEmployee) tseProfessional);
           }
-        } 
+        }
         case 2 -> removePartido((TSEEmployee) tseProfessional);
         default -> view.printInvalidCommand();
       }
@@ -913,12 +1074,11 @@ public class Controller {
       boolean back = false;
       while (!back) {
         if (tseProfessional instanceof TSEEmployee) {
-          if(model.getStatus()){
+          if (model.getStatus()) {
             back = true;
             view.printCannotAddCandidate();
-          }
-          else{
-			view.printTSEMenuInicial();
+          } else {
+            view.printTSEMenuInicial();
             int command = readInt();
             switch (command) {
               case 0 -> back = true;
@@ -928,7 +1088,7 @@ public class Controller {
             }
           }
         } else if (tseProfessional instanceof CertifiedProfessional) {
-		  view.printTSEMenu2();
+          view.printTSEMenu2();
           int command = readInt();
           switch (command) {
             case 1 -> startSession((CertifiedProfessional) tseProfessional);
@@ -989,15 +1149,14 @@ public class Controller {
         .state("MG").build();
     model.addFederalDeputyCandidate(federalDeputyCandidate3, ModelPassword);
 
-
     DeputadoEstadual de1 = new DeputadoEstadual.Builder().name("Carlos Junior").number(1234).party("PDS1")
-    .state("MG").build();
+        .state("MG").build();
     model.addDeputadoEstadualCandidate(de1, ModelPassword);
     DeputadoEstadual de2 = new DeputadoEstadual.Builder().name("Marcos").number(5432).party("PDS2")
-    .state("MG").build();
+        .state("MG").build();
     model.addDeputadoEstadualCandidate(de2, ModelPassword);
     DeputadoEstadual de3 = new DeputadoEstadual.Builder().name("Solange").number(1121).party("IHC")
-    .state("MG").build();
+        .state("MG").build();
     model.addDeputadoEstadualCandidate(de3, ModelPassword);
   }
 
@@ -1042,9 +1201,9 @@ public class Controller {
     Partido partido4 = new Partido.Builder().nome("Interação Humano Computador").sigla("IHC").build();
     model.addPartido(partido4, ModelPassword);
 
-    if(Produtos.PRODUTO_1){
+    if (Produtos.PRODUTO_1) {
       loadCandidates_prod_1(ModelPassword);
-    }else if(Produtos.PRODUTO_2){
+    } else if (Produtos.PRODUTO_2) {
       loadCandidates_prod_2(ModelPassword);
     }
 

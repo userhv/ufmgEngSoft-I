@@ -55,27 +55,19 @@ public class Voter {
   }
 
   public void vote(int number, Model Model, String type, Boolean isProtestVote) {
-    if (type.equals("President")) {
-      if (isProtestVote)
-        Model.computeProtestVote("President", this);
-      else if (number == 0)
-        Model.computeNullVote("President", this);
-      else {
-        President candidate = Model.getPresidentByNumber(number);
-        if (candidate == null)
-          throw new Warning("Número de candidato inválido");
-        Model.computeVote(candidate, this);
-      }
-    } else if (type.equals("FederalDeputy"))
-      if (number == 0)
-        Model.computeNullVote("FederalDeputy", this);
-      else if (isProtestVote)
-        Model.computeProtestVote("FederalDeputy", this);
-      else {
-        FederalDeputy candidate = Model.getFederalDeputyByNumber(this.state, number);
-        if (candidate == null)
-          throw new Warning("Número de candidato inválido");
-        Model.computeVote(candidate, this);
-      }
+    if (isProtestVote){
+      Model.computeProtestVote(type, this);
+      return;
+    }
+    if (number == 0){
+      Model.computeNullVote(type, this);
+      return;
+    }
+    Candidate candidate = Model.getCandidateByNumber(this.state, number, type);
+    if (candidate == null){
+      throw new Warning("Número de candidato inválido");
+    }
+    Model.computeVote(candidate, this);
+
   }
 }
